@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>{{ title }}</title>
+    <meta name="authors" content="Samoylov Ilya, Filipp Zakharov"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="icon" href="/static/images/favicon.png" type="image/x-icon">
+    {% block css_enable %}{% endblock %}
+    <link rel="stylesheet" href="/static/css/libs/animate.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,300&display=swap"
+          rel="stylesheet">
+</head>
+
+<body>
+<header class="header">
+    <div class="container">
+        <div class="logo-box text-center">
+            <img src="/static/images/logo_alpha.png" alt="Logo" class="logo">
+            <p class="motto">Бот. Бог. Величайший.</p>
+        </div>
+
+        <div class="menu d-flex justify-content-center">
+            <ul class="nav">
+                <li class="nav-item text-center">
+                    <a class="nav-link" href="#">Панель<br>управления</a>
+                </li>
+                <li class="nav-item text-center">
+                    <a class="nav-link" href="#"><br>Топ бесед</a>
+                </li>
+                <li class="nav-item text-center">
+                    <a class="nav-link" href="#">Добавить<br>в беседу</a>
+                </li>
+                <li class="nav-item text-center">
+                    <a class="nav-link" href="#">Инструкции<br>и команды</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</header>
+
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+<footer>
+    <div class="container">
+        <div class="footer text-center color-purple">
+            <p class="copyright">&copy; Потомучтомогём</p>
+            <a href="/creators"><p class="creators color-green">Creators</p></a>
+        </div>
+    </div>
+</footer>
+</body>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+{% block js_enable %}{% endblock %}
+</html>

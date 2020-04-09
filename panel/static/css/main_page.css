@@ -1,0 +1,29 @@
+.quote {
+    margin-top: 30px;
+    font-size: 36px;
+    line-height: 40px;
+}
+
+.carousel {
+    border-radius: 35px 35px 35px 35px;
+    overflow: hidden;
+}
+
+.features-headline {
+    font-size: 32px;
+    font-weight: 600;
+}
+
+.features-headline p, .features p {
+    line-height: 35px;
+}
+
+.features {
+    font-size: 30px;
+    font-weight: 200;
+    font-style: italic;
+}
+
+.second-feature {
+    margin-top: 40px;
+}

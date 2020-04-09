@@ -1,0 +1,62 @@
+body {
+    font-family: 'Nunito', sans-serif;
+}
+
+:root {
+    --purple: #5d26c1;
+    --green: #59c173;
+}
+
+.color-green {
+    color: var(--green);
+}
+
+.color-purple {
+    color: var(--purple);
+}
+
+.logo-box {
+    margin-top: 40px;
+}
+
+.logo {
+    max-width: 450px;
+}
+
+.motto {
+    color: var(--purple);
+    font-size: 32px;
+    margin-top: 10px;
+    font-style: italic;
+}
+
+.menu {
+    font-weight: 400;
+    font-size: 26px;
+    margin-top: 10px;
+}
+
+.nav-item a {
+    color: var(--purple);
+    line-height: 30px;
+    transition: all ease-in-out .2s;
+}
+
+.nav-item a:hover {
+    color: var(--green);
+}
+
+footer {
+    margin: 20px 0 10px 0;
+    position: relative;
+    bottom: 0;
+    font-size: 20px;
+}
+
+footer p {
+    margin: 0;
+}
+
+.creators {
+    margin-top: -7px;
+}
