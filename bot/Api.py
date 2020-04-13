@@ -6,9 +6,9 @@ from vk_api.utils import get_random_id
 
 class Vk:
     def __init__(self):
-        self.VkSession = vk_api.VkApi(token='')
+        self.VkSession = vk_api.VkApi(token='e9c4bbb6d86e3115e0bbcb10bfe18ef57bb0c027500562e6c187fccea82c91e98cedb62818fd4d1c90d46')
         self.VkApi = self.VkSession.get_api()
-        self.LongPool = VkBotLongPoll(self.VkSession, group_id='')
+        self.LongPool = VkBotLongPoll(self.VkSession, group_id='194017842')
 
     def MessageSend(self, send_id, message=None, attachment=None, keyboard=None):
         self.VkApi.messages.send(peer_id=send_id,
