@@ -4,9 +4,10 @@ from vk_api.bot_longpoll import VkBotLongPoll
 from vk_api.utils import get_random_id
 
 
-class Vk:
+class Vk:  # TODO: Привести этот АПИ в нормальный вид
     def __init__(self):
-        self.VkSession = vk_api.VkApi(token='e9c4bbb6d86e3115e0bbcb10bfe18ef57bb0c027500562e6c187fccea82c91e98cedb62818fd4d1c90d46')
+        self.VkSession = vk_api.VkApi(
+            token='e9c4bbb6d86e3115e0bbcb10bfe18ef57bb0c027500562e6c187fccea82c91e98cedb62818fd4d1c90d46')
         self.VkApi = self.VkSession.get_api()
         self.LongPool = VkBotLongPoll(self.VkSession, group_id='194017842')
 
@@ -52,3 +53,10 @@ class Vk:
                                      random_id=get_random_id(),
                                      attachment=attachment,
                                      keyboard=keyboard)
+
+
+if __name__ == '__main__':
+    VkSession = vk_api.VkApi(
+        token='e9c4bbb6d86e3115e0bbcb10bfe18ef57bb0c027500562e6c187fccea82c91e98cedb62818fd4d1c90d46')
+    VkApi = VkSession.get_api()
+    print(VkApi.messages.getConversationsById(peer_ids=2000000001, group_id=194017842))

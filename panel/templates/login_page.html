@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block css_enable %}
+    <link rel="stylesheet" href="static/css/login.css">
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="login-quote color-purple text-center">
+            Пришло время... <span class="color-green">Залогиниться!</span>
+        </div>
+        <div class="login-form">
+            <form action="" method="post">
+                {{ form.csrf_token }}
+                <label for="login">Логин</label>
+                {% if not message %}
+                    {{ form.login(class="form-control") }}
+                {% else %}
+                    {{ form.login(class="form-control is-invalid") }}
+                {% endif %}
+
+                <label for="password">Пароль</label>
+                {% if not message %}
+                    {{ form.password(class="form-control") }}
+                {% else %}
+                    {{ form.password(class="form-control is-invalid") }}
+                {% endif %}
+
+                {% if message %}
+                    <p class="message">{{ message }}</p>
+                {% endif %}
+                <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
+                <p>{{ form.submit(type="submit", class="btn btn-purple") }}</p>
+            </form>
+        </div>
+    </div>
+{% endblock %}

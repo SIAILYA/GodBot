@@ -49,6 +49,7 @@ body {
 footer {
     margin: 20px 0 10px 0;
     position: relative;
+    min-width: 100%;
     bottom: 0;
     font-size: 20px;
 }

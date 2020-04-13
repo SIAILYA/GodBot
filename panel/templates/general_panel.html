@@ -1,0 +1,11 @@
+{% extends base.html %}
+{% block css_enable %}
+    <link rel="stylesheet" href="static/css/panel.css">
+{% endblock %}
+
+{% block content %}
+    {% for conf in user_conferences %} #\
+        {{ conf }}
+        {#TODO: Реализовать красивую таблицу с беседами, в которых есть пользователь#}
+    {% endfor %}
+{% endblock %}
