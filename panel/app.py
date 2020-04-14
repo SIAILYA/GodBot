@@ -4,8 +4,8 @@ from flask_login import login_user, LoginManager
 from panel.data import db_session
 from panel.data.db_session import create_session
 from panel.data.forms.login_form import LoginForm
+from panel.data.models.all_users import User
 from panel.data.models.panel_user import PanelUser
-from panel.data.models.user import User
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'our secret key'
@@ -13,7 +13,8 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 
-# TODO: 1. Сделать все модели, добавить orm отношения таблицам (А сначала разобраться как это блять работать должно)
+# TODO:
+#  1. Сделать все модели, добавить orm отношения таблицам (А сначала разобраться как это блять работать должно)
 #  2. Придумать как хранить права участников (с возможностью расширения) - можно просто строкой из 0 и 1 (заранее
 #  установить порядок прав)
 #  3. Сделать грамотную систему прав в панели, чтобы юзер мог иметь доступ только к

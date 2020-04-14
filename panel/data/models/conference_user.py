@@ -1,19 +1,44 @@
 import sqlalchemy
 from flask_login import UserMixin
+from sqlalchemy import orm
 from sqlalchemy_serializer import SerializerMixin
 
 from panel.data.db_session import SqlAlchemyBase
 
 
 class ConferenceUser(SqlAlchemyBase, UserMixin, SerializerMixin):
-    def __init__(self, conference_id):
-        __tablename__ = f'conference_{conference_id}'
+    __tablename__ = f'main_table'
 
     id = sqlalchemy.Column(sqlalchemy.INTEGER, primary_key=True, autoincrement=True)
-    vk_id = sqlalchemy.Column(sqlalchemy.INTEGER)
-    name = sqlalchemy.Column(sqlalchemy.String(120))
-    surname = sqlalchemy.Column(sqlalchemy.String(120))
-    # rights = TODO: Придумать как "шифровать" права пользователя (модель прав, строка из 0 и 1 и т.д.)
-    msg_count = sqlalchemy.Column(sqlalchemy.INTEGER)
-    msg_today = sqlalchemy.Column(sqlalchemy.INTEGER)
-    warns = sqlalchemy.Column(sqlalchemy.INTEGER)
+    member_id = sqlalchemy.Column(sqlalchemy.INTEGER, sqlalchemy.ForeignKey('all_users.user_id'),
+                                  index=True)
+    conference_id = sqlalchemy.Column(sqlalchemy.INTEGER, sqlalchemy.ForeignKey('all_conferences.conference_id'),
+                                      index=True)
+    nickname = sqlalchemy.Column(sqlalchemy.String(20), nullable=True)
+
+    msg_count = sqlalchemy.Column(sqlalchemy.INTEGER, default=0)
+
+    invited_by = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    is_admin = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    is_owner = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    join_date = sqlalchemy.Column(sqlalchemy.TIMESTAMP, nullable=True)
+
+    is_muted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    is_banned = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    is_leave = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+
+    warns = sqlalchemy.Column(sqlalchemy.INTEGER, default=0)
+    kicks = sqlalchemy.Column(sqlalchemy.INTEGER, default=0)  # Сколько раз был кикнут
+    rights = sqlalchemy.Column(sqlalchemy.String(50))  # Только название роли!
+
+    title_change = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    photo_change = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    kick = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    warn = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    watch_stat = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+
+    kick_immunity = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    warn_immunity = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+
+    conference = orm.relation('Conference')
+    user = orm.relation('User')
