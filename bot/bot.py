@@ -24,9 +24,10 @@ class GodBotVk:
         create_session()
         for event in self.VkApi.LongPool.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:
-                print('=====================')
-                event_pprint(event)
-                print('=====================')
+
+                # print('=====================')
+                # event_pprint(event)
+                # print('=====================')
 
                 message_object = event.obj.message
                 if message_object['peer_id'] > 2000000000:  # Беседки
@@ -49,7 +50,7 @@ class GodBotVk:
                                             message_loader('get_admin_rights.txt'))
 
                     # Заполняем таблицы:
-                    self.get_admin_rights(event)
+                    self.fill_info(event)
 
                 elif queued.before_notification > 0:
                     queued.before_notification -= 1
@@ -60,7 +61,10 @@ class GodBotVk:
                     self.VkApi.message_send(peer_id,
                                             message_loader('no_admin_permissions.txt'))
             else:
-                pass
+                cu = self.session.query(ConferenceUser).filter(ConferenceUser.conference_id == peer_id,
+                                                               ConferenceUser.user_id == message_object[
+                                                                   'from_id']).first()
+                print(cu)
 
     def chat_action(self, message_object):
         action = message_object['action']
@@ -92,7 +96,7 @@ class GodBotVk:
         self.session.add(conferences_queue)
         self.session.commit()
 
-    def get_admin_rights(self, event):
+    def fill_info(self, event):
         message_object = event.obj.message
         peer_id = message_object['peer_id']
 
@@ -135,6 +139,18 @@ class GodBotVk:
             new_conference.members.append(user)
             self.session.add(conference_user)
             self.session.commit()
+
+    def update_conference_members(self, peer_id):
+        conference_info = self.VkApi.get_conference_info(peer_id)
+        members_info = self.VkApi.get_members(peer_id)
+
+        for member in members_info['profiles']:
+            user = self.session.query(User).filter(User.user_id == member['id'])
+            conference = self.session.query(Conference).filter(Conference.conference_id == peer_id)
+            conference_user = self.session.query(ConferenceUser).filter(ConferenceUser.conference_id == peer_id,
+                                                                        ConferenceUser.user_id == member['id'])
+
+
 
 if __name__ == '__main__':
     GodBotVk().start_pooling()

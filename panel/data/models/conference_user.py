@@ -45,3 +45,27 @@ class ConferenceUser(SqlAlchemyBase, UserMixin, SerializerMixin):
 
     conference = orm.relation('Conference')
     user = orm.relation('User')
+
+    def __repr__(self):
+        return f'{self.conference.__repr__(False)}\n\n' \
+               f'{self.user}\n' \
+               f'role: {self.rights}\n' \
+               f'messages: {self.msg_count}\n' \
+               f'invited_by\n' \
+               f'=====permissions======\n' \
+               f'is_admin: {self.is_admin}\n' \
+               f'is_owner: {self.is_owner}\n' \
+               f'join_date: {self.join_date}\n' \
+               f'is_muted: {self.is_muted}\n' \
+               f'is_banned: {self.invited_by}\n' \
+               f'is_leave: {self.is_leave}\n' \
+               f'warns: {self.warns}\n' \
+               f'kicks: {self.kick}\n' \
+               f'rights: {self.rights}\n' \
+               f'title_change: {self.title_change}\n' \
+               f'photo_change: {self.photo_change}\n' \
+               f'kick: {self.kick}\n' \
+               f'warn: {self.warn}\n' \
+               f'watch_stat: {self.watch_stat}\n' \
+               f'kick_immunity: {self.kick_immunity}\n' \
+               f'warn_immunity: {self.warn_immunity}\n'

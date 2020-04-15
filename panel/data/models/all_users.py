@@ -32,3 +32,13 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
 
     msg_count = sqlalchemy.Column(sqlalchemy.INTEGER, default=0)  # Сообщения со всех бесед
     # (сделаем регулярное обновление по всем пользователям, чтобы не грузить БД)
+
+    def __repr__(self):
+        return f'<User>\n' \
+               f'id: {self.user_id}\n' \
+               f'name: {self.name}\n' \
+               f'surname: {self.surname}\n' \
+               f'closed profile: {self.is_closed}\n' \
+               f'sex: {self.sex}\n' \
+               f'conferences: {len(self.conferences)}\n' \
+               f'msg count: {self.msg_count}'
