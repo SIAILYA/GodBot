@@ -1,6 +1,7 @@
 import sqlalchemy
 from flask_login import UserMixin
 from sqlalchemy import orm
+from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy_serializer import SerializerMixin
 
 from panel.data.db_session import SqlAlchemyBase
@@ -10,18 +11,20 @@ class ConferenceUser(SqlAlchemyBase, UserMixin, SerializerMixin):
     __tablename__ = f'main_table'
 
     id = sqlalchemy.Column(sqlalchemy.INTEGER, primary_key=True, autoincrement=True)
-    member_id = sqlalchemy.Column(sqlalchemy.INTEGER, sqlalchemy.ForeignKey('all_users.user_id'),
-                                  index=True)
-    conference_id = sqlalchemy.Column(sqlalchemy.INTEGER, sqlalchemy.ForeignKey('all_conferences.conference_id'),
+    user_id = sqlalchemy.Column(INTEGER(unsigned=True),
+                                sqlalchemy.ForeignKey('all_users.user_id'),
+                                index=True)
+    conference_id = sqlalchemy.Column(INTEGER(unsigned=True),
+                                      sqlalchemy.ForeignKey('all_conferences.conference_id'),
                                       index=True)
-    nickname = sqlalchemy.Column(sqlalchemy.String(20), nullable=True)
 
+    nickname = sqlalchemy.Column(sqlalchemy.String(20), nullable=True)
     msg_count = sqlalchemy.Column(sqlalchemy.INTEGER, default=0)
 
-    invited_by = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    invited_by = sqlalchemy.Column(INTEGER(unsigned=True))
     is_admin = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
     is_owner = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
-    join_date = sqlalchemy.Column(sqlalchemy.TIMESTAMP, nullable=True)
+    join_date = sqlalchemy.Column(sqlalchemy.String(10), nullable=True)
 
     is_muted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
     is_banned = sqlalchemy.Column(sqlalchemy.Boolean, default=False)

@@ -3,8 +3,6 @@ from vk_api import VkUpload
 from vk_api.bot_longpoll import VkBotLongPoll
 from vk_api.utils import get_random_id
 
-from .other import event_pprint
-
 
 class VkApi:  # TODO: Привести этот АПИ в нормальный вид
     def __init__(self):
@@ -44,11 +42,21 @@ class VkApi:  # TODO: Привести этот АПИ в нормальный �
             return False
         return True
 
+    def get_members(self, peer_id):
+        # all_info = self.VkApi.execute(code=f'''
+        #                                     var conf_info = API.messages.getConversationsById({{"peer_ids":{peer_id},
+        #                                                                                         "group_id":{194017842}}});
+        #
+        #                                     return conf_info@.items;
+        #                                     ''')
+        # event_pprint(all_info, True)
+
+        conf_members = self.VkApi.messages.getConversationMembers(peer_id=peer_id, group_id=194017842)
+        return conf_members
+
     def get_conference_info(self, peer_id):
         conf_info = self.VkApi.messages.getConversationsById(peer_ids=peer_id, group_id=194017842)
-        event_pprint(conf_info, True)
-        conf_members = self.VkApi.messages.getConversationMembers(peer_id=peer_id, group_id=194017842)
-        event_pprint(conf_members, True)
+        return conf_info['items'][0]
 
     def distribution(self, user_ids, message=None, attachment=None, keyboard=None):
         if len(user_ids) > 100:
@@ -66,8 +74,7 @@ class VkApi:  # TODO: Привести этот АПИ в нормальный �
                                      keyboard=keyboard)
 
 
-if __name__ == '__main__':
-    VkSession = vk_api.VkApi(
-        token='e9c4bbb6d86e3115e0bbcb10bfe18ef57bb0c027500562e6c187fccea82c91e98cedb62818fd4d1c90d46')
-    VkApi = VkSession.get_api()
-    print(VkApi.messages.getConversationsById(peer_ids=2000000001, group_id=194017842))
+def find_member_info(member_id, items):
+    for i in items:
+        if i['member_id'] == member_id:
+            return i['invited_by'], i.get('is_admin', False), i.get('is_owner', False), i.get('join_date', None)

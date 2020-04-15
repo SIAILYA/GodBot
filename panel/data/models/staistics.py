@@ -3,6 +3,7 @@ from datetime import datetime
 import sqlalchemy
 from flask_login import UserMixin
 from sqlalchemy import orm
+from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy_serializer import SerializerMixin
 
 from panel.data.db_session import SqlAlchemyBase
@@ -11,10 +12,13 @@ from panel.data.db_session import SqlAlchemyBase
 class Statistics(SqlAlchemyBase, UserMixin, SerializerMixin):
     __tablename__ = f'statistics'
 
+    id = sqlalchemy.Column(sqlalchemy.INTEGER, primary_key=True, autoincrement=True)
     date = sqlalchemy.Column(sqlalchemy.Date, default=datetime.now)
-    member_id = sqlalchemy.Column(sqlalchemy.INTEGER, sqlalchemy.ForeignKey('all_users.user_id'),
+    member_id = sqlalchemy.Column(INTEGER(unsigned=True),
+                                  sqlalchemy.ForeignKey('all_users.user_id'),
                                   index=True)
-    conference_id = sqlalchemy.Column(sqlalchemy.INTEGER, sqlalchemy.ForeignKey('all_conferences.conference_id'),
+    conference_id = sqlalchemy.Column(INTEGER(unsigned=True),
+                                      sqlalchemy.ForeignKey('all_conferences.conference_id'),
                                       index=True)
 
     h0 = sqlalchemy.Column(sqlalchemy.INTEGER, default=0)
