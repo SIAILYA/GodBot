@@ -1,3 +1,5 @@
+import datetime
+
 import sqlalchemy
 from flask_login import UserMixin
 from sqlalchemy import orm
@@ -47,25 +49,46 @@ class ConferenceUser(SqlAlchemyBase, UserMixin, SerializerMixin):
     user = orm.relation('User')
 
     def __repr__(self):
-        return f'{self.conference.__repr__(False)}\n\n' \
-               f'{self.user}\n' \
-               f'role: {self.rights}\n' \
-               f'messages: {self.msg_count}\n' \
-               f'invited_by\n' \
-               f'=====permissions======\n' \
-               f'is_admin: {self.is_admin}\n' \
-               f'is_owner: {self.is_owner}\n' \
-               f'join_date: {self.join_date}\n' \
-               f'is_muted: {self.is_muted}\n' \
-               f'is_banned: {self.invited_by}\n' \
-               f'is_leave: {self.is_leave}\n' \
-               f'warns: {self.warns}\n' \
-               f'kicks: {self.kick}\n' \
-               f'rights: {self.rights}\n' \
-               f'title_change: {self.title_change}\n' \
-               f'photo_change: {self.photo_change}\n' \
-               f'kick: {self.kick}\n' \
-               f'warn: {self.warn}\n' \
-               f'watch_stat: {self.watch_stat}\n' \
-               f'kick_immunity: {self.kick_immunity}\n' \
-               f'warn_immunity: {self.warn_immunity}\n'
+        return \
+            f'{self.conference.conference_id}\n' \
+            f'{self.user}\n' \
+            f'role: {self.rights}\n' \
+            f'messages: {self.msg_count}\n' \
+            f'invited_by: {self.invited_by}\n' \
+            f'=====permissions======\n' \
+            f'is_admin: {self.is_admin}\n' \
+            f'is_owner: {self.is_owner}\n' \
+            f'join_date: {self.join_date}\n' \
+            f'is_muted: {self.is_muted}\n' \
+            f'is_banned: {self.invited_by}\n' \
+            f'is_leave: {self.is_leave}\n' \
+            f'warns: {self.warns}\n' \
+            f'kicks: {self.kick}\n' \
+            f'rights: {self.rights}\n' \
+            f'title_change: {self.title_change}\n' \
+            f'photo_change: {self.photo_change}\n' \
+            f'kick: {self.kick}\n' \
+            f'warn: {self.warn}\n' \
+            f'watch_stat: {self.watch_stat}\n' \
+            f'kick_immunity: {self.kick_immunity}\n' \
+            f'warn_immunity: {self.warn_immunity}\n'
+
+    def set_defaults(self):
+        self.nickname = None
+        self.is_admin = False
+        self.is_muted = False
+        self.is_banned = False
+        self.is_leave = False
+        self.warns = False
+        self.rights = None
+        self.title_change = False
+        self.photo_change = False
+        self.kick = False
+        self.warn = False
+        self.watch_stat = False
+        self.kick_immunity = False
+        self.warn_immunity = False
+
+    def set_activity(self):
+        self.conference.last_message = datetime.datetime.now
+        self.user

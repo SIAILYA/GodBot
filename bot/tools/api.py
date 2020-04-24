@@ -43,14 +43,6 @@ class VkApi:  # TODO: Привести этот АПИ в нормальный �
         return True
 
     def get_members(self, peer_id):
-        # all_info = self.VkApi.execute(code=f'''
-        #                                     var conf_info = API.messages.getConversationsById({{"peer_ids":{peer_id},
-        #                                                                                         "group_id":{194017842}}});
-        #
-        #                                     return conf_info@.items;
-        #                                     ''')
-        # event_pprint(all_info, True)
-
         conf_members = self.VkApi.messages.getConversationMembers(peer_id=peer_id, group_id=194017842)
         return conf_members
 

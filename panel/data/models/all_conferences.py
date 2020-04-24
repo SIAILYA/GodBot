@@ -25,6 +25,8 @@ class Conference(SqlAlchemyBase, UserMixin, SerializerMixin):
     photo = sqlalchemy.Column(sqlalchemy.String(300))
     owner = sqlalchemy.Column(sqlalchemy.INTEGER)
     last_message = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.now)
+    archived = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+
     members = orm.relation("User",
                            secondary="associate_users_to_conference",
                            backref="all_conferences")
@@ -47,3 +49,6 @@ class Conference(SqlAlchemyBase, UserMixin, SerializerMixin):
                f'msg count: {self.msg_count}\n' \
                f'anti obscene: {self.anti_obscene}\n' \
                f'auto kick: {self.anti_obscene}'
+
+    def all_members_id(self):
+        print([u.user_id for u in self.members])

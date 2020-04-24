@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import sqlalchemy
 from flask_login import UserMixin
 from sqlalchemy import orm
@@ -32,6 +34,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
 
     msg_count = sqlalchemy.Column(sqlalchemy.INTEGER, default=0)  # Сообщения со всех бесед
     # (сделаем регулярное обновление по всем пользователям, чтобы не грузить БД)
+    statistics = orm.relation('Statistics')
 
     def __repr__(self):
         return f'<User>\n' \

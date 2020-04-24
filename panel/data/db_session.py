@@ -17,13 +17,16 @@ def global_init(db_name='main_db'):
     if not db_name or not db_name.strip():
         raise Exception("Необходимо указать имя базы данных.")
 
-    conn_str = f'mysql+mysqldb://root:godbotpassword@34.76.42.154:3306/{db_name.strip()}?charset=utf8'
-    print(conn_str)
+    conn_str = f'mysql+pymysql://root:godbotpassword@34.76.42.154:3306/{db_name.strip()}?charset=utf8'
+    # print(conn_str)
+
+    from .models import all_models
 
     engine = sa.create_engine(conn_str)
     __factory = orm.sessionmaker(bind=engine)
 
     SqlAlchemyBase.metadata.create_all(engine)
+    # print('db is init!')
 
 
 def create_session() -> Session:
