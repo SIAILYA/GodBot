@@ -1,0 +1,5 @@
+pendulum
+flask
+flask_login
+sqlalchemy
+vk_api

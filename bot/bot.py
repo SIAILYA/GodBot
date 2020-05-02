@@ -55,7 +55,7 @@ class GodBotVk:
             self.chat_action(message_object)
         else:
             queued = self.session.query(ConferencesQueue).filter(ConferencesQueue.conference_id == peer_id).first()
-            if queued:  # Ждем админа
+            if queued:  # Ждем прав админа
                 if self.VkApi.check_admin_permission(peer_id):
                     self.session.delete(queued)
                     self.VkApi.message_send(peer_id,

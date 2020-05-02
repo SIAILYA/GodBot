@@ -1,10 +1,10 @@
 import vk_api.vk_api
 from vk_api import VkUpload
-from vk_api.bot_longpoll import VkBotLongPoll
+from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 from vk_api.utils import get_random_id
 
 
-class VkApi:  # TODO: Привести этот АПИ в нормальный вид
+class VkApi:
     def __init__(self):
         self.VkSession = vk_api.VkApi(
             token='e9c4bbb6d86e3115e0bbcb10bfe18ef57bb0c027500562e6c187fccea82c91e98cedb62818fd4d1c90d46')
