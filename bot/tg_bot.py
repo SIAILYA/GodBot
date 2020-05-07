@@ -10,11 +10,12 @@ def switch_chat(update, context):
 
 def chat_switched(update, context):
     message = update.message.text
-    with open('bot/names.txt', 'r') as names:
+    with open('bot/logs/names.txt', 'r') as names:
         names = names.read()
         if message in names:
             switch_id_to = names[names.find(message) - 10:names.find(message) - 1]
             update.message.reply_text(f'Вы переключились на чат с {message}.')
+            context.user_data['friend'] = switch_id_to
         else:
             update.message.reply_text('Человек не найден!')
     return ConversationHandler.END
@@ -27,7 +28,7 @@ def stop(update, context):
 def task(context):
     job = context.job
     global length
-    with open('from_vk_to_tg.txt', 'r') as logs:
+    with open('bot/logs/from_vk_to_tg.txt', 'r') as logs:
         answers = logs.readlines()
         if len(answers) != length:
             context.bot.send_message(job.context, text=' '.join(answers[0].split()[:-4]))
@@ -35,7 +36,7 @@ def task(context):
         if answers:
             answers.pop(0)
             length -= 1
-    with open('from_vk_to_tg.txt', 'w') as logs:
+    with open('bot/logs/from_vk_to_tg.txt', 'w') as logs:
         logs.write(''.join(answers))
 
 

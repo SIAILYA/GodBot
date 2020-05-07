@@ -76,9 +76,9 @@ class GodBotVk:
                     self.text = message_object['text']
                     name = self.VkApi.get_user_name(message_object['from_id'])
                     time = asctime().split()
-                    with open('from_vk_to_tg.txt', 'a') as logs:
+                    with open('bot/logs/from_vk_to_tg.txt', 'a') as logs:
                         logs.write(' '.join(name) + ': ' + self.text + ' | ' + time[1] + ' ' + time[2] + ' ' + time[-2] + '\n')
-                    with open('bot/names.txt', 'r+') as names:
+                    with open('bot/logs/names.txt', 'r+') as names:
                         ids = names.read()
                         if str(message_object['from_id']) not in ids.split():
                             names.write(ids + str(message_object['from_id']) + ' ' + ' '.join(name) + '\n')
