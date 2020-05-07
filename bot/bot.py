@@ -19,6 +19,10 @@ from panel.data.models.conferences_queue import ConferencesQueue
 from panel.data.models.staistics import Statistics
 
 
+from telegram.ext import Updater, MessageHandler, Filters
+from telegram.ext import CallbackContext, CommandHandler
+
+
 # TODO:
 #  1. Кик пользователя
 #  2. Бан и мут пользователя (+ соотв проверки)
@@ -47,7 +51,8 @@ class GodBotVk:
                     self.conference(event)
                     processing_time = timer.diff(pendulum.now()).as_timedelta()
                 else:  # Люди и нелюди
-                    print(3)
+                    self.text = event.obj.message['text']
+                    print(self.text, 'vk')
                 self.session.commit()
 
     def conference(self, event):
@@ -333,6 +338,34 @@ class GodBotVk:
                                     attachment=self.VkApi.upload_photo('plot.png'))
 
             remove('plot.png')
+
+
+def start(update, context):
+    reply_keyboard = [['Зайти в музей']]
+    update.message.reply_text('Добро пожаловать! Пожалуйста, сдайте верхнюю одежду в гардероб!')
+
+
+def way(update, context):
+    answer = update.message.text
+    print(GodBotVk.text)
+    update.message.reply_text('Вы вошли в первый зал. Здесь представлены популярнейшие скульптуры из глины: вазы,'
+                              ' кувшины, тарелки и столовые приборы, на стенах висят инструменты.')
+
+
+def main():
+    REQUEST_KWARGS = {
+        'proxy_url': 'socks5h://geek:socks@t.geekclass.ru:7777'
+    }
+    updater = Updater("1156438301:AAFDrWFKvxh3zQFoHWh6trKSii8CVoODdbw", use_context=True,
+                      request_kwargs=REQUEST_KWARGS)
+    dp = updater.dispatcher
+
+    text_handler = MessageHandler(Filters.text, way)
+    dp.add_handler(CommandHandler('start', start))
+    dp.add_handler(text_handler)
+    print(GodBotVk.text)
+    updater.start_polling()
+    updater.idle()
 
 
 if __name__ == '__main__':
