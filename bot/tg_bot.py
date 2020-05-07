@@ -38,6 +38,13 @@ def send_message(update, context):
     except (IndexError, ValueError):
         pass
 
+    message = update.message.text
+    with open('names.txt') as names:
+        if message in names.read():
+            reply_keyboard = [['Зайти в музей']]
+            markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
+            update.message.reply_text(f'Вы хотите переключиться в чат с {message}?')
+
 
 def main():
     REQUEST_KWARGS = {
@@ -55,5 +62,7 @@ def main():
 
 
 length = 0
+with open('names.txt') as names:
+    print(names.read())
 if __name__ == '__main__':
     main()

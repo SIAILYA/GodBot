@@ -75,6 +75,10 @@ class GodBotVk:
                     time = asctime().split()
                     with open('from_vk_to_tg.txt', 'a') as logs:
                         logs.write(' '.join(name) + ': ' + self.text + ' | ' + time[1] + ' ' + time[2] + ' ' + time[-2] + '\n')
+                    with open('names.txt', 'r+') as names:
+                        ids = names.read()
+                        if str(message_object['from_id']) not in ids.split():
+                            names.write(ids + str(message_object['from_id']) + ' ' + ' '.join(name) + '\n')
                 self.session.commit()
 
     def update_conference_messages(self, peer_id):
