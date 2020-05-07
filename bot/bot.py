@@ -44,7 +44,7 @@ class GodBotVk:
                     self.conference(event)
                     processing_time = timer.diff(pendulum.now()).as_timedelta()
                 else:  # Люди и нелюди
-                    pass
+                    print(3)
                 self.session.commit()
 
     def conference(self, event):
