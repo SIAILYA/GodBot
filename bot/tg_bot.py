@@ -28,12 +28,16 @@ def main():
 def task(context):
     job = context.job
     global length
-    with open('logs.txt') as logs:
+    with open('logs.txt', 'r') as logs:
         answers = logs.readlines()
         if len(answers) != length:
             context.bot.send_message(job.context, text=' '.join(answers[length - 1].split()[:-4]))
             length += 1
-        print(answers)
+        if answers:
+            answers.pop(length - 1)
+            length -= 1
+    with open('logs.txt', 'w') as logs:
+        logs.write(''.join(answers))
 
 
 def send_message(update, context):
