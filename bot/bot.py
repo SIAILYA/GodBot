@@ -4,6 +4,7 @@ from os import remove
 import matplotlib
 import pendulum
 import sqlalchemy
+import vk_api
 from tools.api import VkApi, find_member_info
 from tools.loaders import message_loader, photo_loader
 from tools.other import event_pprint
@@ -11,6 +12,8 @@ from vk_api.bot_longpoll import VkBotEventType
 import matplotlib.pyplot as plt
 
 from user_management import new_user, new_conf_user
+
+from keyboards import kick_keyboard
 from panel.data import db_session
 from panel.data.models.all_conferences import Conference
 from panel.data.models.all_users import User
@@ -41,9 +44,7 @@ class GodBotVk:
         for event in self.VkApi.LongPool.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:
 
-                # print('=====================')
-                # event_pprint(event)
-                # print('=====================')
+                # print(event)
 
                 message_object = event.obj.message
                 if message_object['peer_id'] > 2000000000:  # Беседки
@@ -290,7 +291,7 @@ class GodBotVk:
 
         statistics.inc(datetime.now().hour)
 
-        if text[0] in '!/;':
+        if text[0] in '!/;' or '[club194017842|@godisbot]' in text or '[club194017842|GodBot]' in text:
             self.command_handler(text, event)
 
     def user_conf_msg_count_total(self, member_id, peer_id):
@@ -315,10 +316,49 @@ class GodBotVk:
 
         return list(reversed([str(d).replace('2020-', '') for d in dates])), list(reversed(stats))
 
+    def get_instances(self, peer_id, user_id, user=False, conference=False, conf_user=False, stat=False, day=None):
+        res = {'user': None,
+               'conference': None,
+               'conf_user': None,
+               'statistics': None}
+
+        if user:
+            res['user'] = self.session.query(User).filter(User.user_id == user_id).first()
+        if conference:
+            res['conference'] = self.session.query(Conference).filter(Conference.conference_id == peer_id).first()
+        if conf_user:
+            res['conf_user'] = self.session.query(ConferenceUser).filter(ConferenceUser.conference_id == peer_id,
+                                                                         ConferenceUser.user_id == user_id).first()
+        if stat:
+            res['statistics'] = self.session.query(Statistics).filter(Statistics.member_id == peer_id,
+                                                                      Statistics.conference_id == user_id,
+                                                                      Statistics.date == day).first()
+
+        return res
+
+    def payload_handler(self, event):
+        message_object = event.obj.message
+        peer_id = message_object['peer_id']
+        from_id = message_object['from_id']
+        payload = message_object['payload'].strip('"[]')
+        if 'kick' in payload:
+            kicked_id = int(payload.lstrip('kick '))
+            kicked_inst = self.get_instances(peer_id, kicked_id, conf_user=True)['conf_user']
+            kick_inst = self.get_instances(peer_id, from_id, conf_user=True)['conf_user']
+            if not kicked_inst.kick_immunity and kick_inst.kick:
+                try:
+                    self.VkApi.kick_user(peer_id - 2000000000, kicked_id)
+                except vk_api.exceptions.ApiError:
+                    self.VkApi.message_send(peer_id, 'Невозможно выгнать этого пользователя 😦')
+
     def command_handler(self, text, event):
-        command = text.lstrip('/!;')
-        peer_id = event.obj.message['peer_id']
-        from_id = event.obj.message['from_id']
+        command = text.lstrip('/!;').split()[0]
+        message_object = event.obj.message
+        peer_id = message_object['peer_id']
+        from_id = message_object['from_id']
+
+        if 'payload' in message_object:
+            self.payload_handler(event)
 
         if command in ['upd', 'update', 'обновить']:
             self.VkApi.message_send(peer_id, 'Обновляю информацию о беседе...')
@@ -338,6 +378,49 @@ class GodBotVk:
                                     attachment=self.VkApi.upload_photo('plot.png'))
 
             remove('plot.png')
+        if command in ['kick', 'кик', 'выгнать']:
+            kick_id = None
+            try:
+                kick_id = int(text.lstrip('/!;').split()[1])
+            except IndexError:
+                if 'reply_message' in message_object:
+                    kick_id = message_object['reply_message']['from_id']
+                elif len(message_object['fwd_messages']):
+                    kick_id = message_object['fwd_messages'][0]['from_id']
+            if kick_id:
+                try:
+                    self.VkApi.kick_user(peer_id - 2000000000, kick_id)
+                except vk_api.exceptions.ApiError:
+                    self.VkApi.message_send(peer_id, 'Невозможно выгнать этого пользователя 😦')
+        if command in ['варн', 'предупреждение', 'warn']:
+            warn_id = from_id  # Кто кикает
+            warned_id = None  # Кого кикнуть
+
+            try:
+                warned_id = int(text.lstrip('/!;').split()[1])
+            except IndexError:
+                if 'reply_message' in message_object:
+                    warned_id = message_object['reply_message']['from_id']
+                elif len(message_object['fwd_messages']):
+                    warned_id = message_object['fwd_messages'][0]['from_id']
+            if warned_id:
+                inst = self.get_instances(peer_id, warn_id, user=True, conf_user=True, conference=True)
+                warned_inst = self.get_instances(peer_id, warned_id, user=True, conf_user=True)
+                if inst['conf_user'].warn and not warned_inst['conf_user'].warn_immunity:
+                    warned_inst['conf_user'].warns += 1
+                    self.VkApi.message_send(peer_id, f'@id{warned_id}({warned_inst["user"].name}) получает '
+                                                     f'предупреждение!\n'
+                                                     f'Это {warned_inst["conf_user"].warns} варн в его копилке!')
+                if (warned_inst["conf_user"].warns >= 3) and (not warned_inst['conf_user'].kick_immunity):
+                    if not inst['conference'].auto_kick:
+                        self.VkApi.message_send(peer_id, f'@id{warned_id}({warned_inst["user"].name}) получил '
+                                                         f'3 предупреждения. В беседе отключена функция авто-кика',
+                                                keyboard=kick_keyboard(warned_id))
+                    else:
+                        self.VkApi.message_send(peer_id, f'@id{warned_id}({warned_inst["user"].name}) получил '
+                                                         f'3 предупреждения. Выгоняем...',
+                                                keyboard=kick_keyboard(warned_id))
+                        self.VkApi.kick_user(peer_id, warned_id)
 
 
 if __name__ == '__main__':

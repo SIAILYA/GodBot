@@ -67,7 +67,8 @@ class VkApi:
 
     def kick_user(self, chat_id, member_id):
         self.VkApi.messages.removeChatUser(chat_id=chat_id,
-                                           memver_id=member_id)
+                                           memver_id=member_id,
+                                           user_id=member_id)
 
 
 def find_member_info(member_id, items):
