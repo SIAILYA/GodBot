@@ -65,6 +65,8 @@ class VkApi:
                                      attachment=attachment,
                                      keyboard=keyboard)
 
+    def kick_user(self, chat_id, member_id):
+
 
 def find_member_info(member_id, items):
     for i in items:

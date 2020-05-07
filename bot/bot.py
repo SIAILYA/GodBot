@@ -333,6 +333,7 @@ class GodBotVk:
                                     attachment=self.VkApi.upload_photo('plot.png'))
 
             remove('plot.png')
+        if command in 
 
 
 if __name__ == '__main__':
