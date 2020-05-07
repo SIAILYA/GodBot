@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 from os import remove
 
-import matplotlib
-import matplotlib.pyplot as plt
+# import matplotlib
+# import matplotlib.pyplot as plt
 import pendulum
 import sqlalchemy
 import vk_api
@@ -73,7 +73,7 @@ class GodBotVk:
                     self.text = message_object['text']
                     name = self.VkApi.get_user_name(message_object['from_id'])
                     time = asctime().split()
-                    with open('logs.txt', 'a') as logs:
+                    with open('from_vk_to_tg.txt', 'a') as logs:
                         logs.write(' '.join(name) + ': ' + self.text + ' | ' + time[1] + ' ' + time[2] + ' ' + time[-2] + '\n')
                 self.session.commit()
 

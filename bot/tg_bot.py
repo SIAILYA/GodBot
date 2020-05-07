@@ -6,37 +6,22 @@ from telegram import ReplyKeyboardMarkup
 def start(update, context):
     reply_keyboard = [['Зайти в музей']]
     markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
-    update.message.reply_text('Добро пожаловать! Пожалуйста, сдайте верхнюю одежду в гардероб!',
+    update.message.reply_text('Привет! Отвечать вам будет живой человек!',
                               reply_markup=markup)
-
-
-def main():
-    REQUEST_KWARGS = {
-        'proxy_url': 'socks5h://geek:socks@t.geekclass.ru:7777'
-    }
-    updater = Updater("1156438301:AAFDrWFKvxh3zQFoHWh6trKSii8CVoODdbw", use_context=True,
-                      request_kwargs=REQUEST_KWARGS)
-    dp = updater.dispatcher
-    text_handler = MessageHandler(Filters.text, send_message)
-    dp.add_handler(CommandHandler('start', start))
-    dp.add_handler(text_handler)
-    print('lol')
-    updater.start_polling()
-    updater.idle()
 
 
 def task(context):
     job = context.job
     global length
-    with open('logs.txt', 'r') as logs:
+    with open('from_vk_to_tg.txt', 'r') as logs:
         answers = logs.readlines()
         if len(answers) != length:
-            context.bot.send_message(job.context, text=' '.join(answers[length - 1].split()[:-4]))
+            context.bot.send_message(job.context, text=' '.join(answers[0].split()[:-4]))
             length += 1
         if answers:
-            answers.pop(length - 1)
+            answers.pop(0)
             length -= 1
-    with open('logs.txt', 'w') as logs:
+    with open('from_vk_to_tg.txt', 'w') as logs:
         logs.write(''.join(answers))
 
 
@@ -52,6 +37,21 @@ def send_message(update, context):
 
     except (IndexError, ValueError):
         pass
+
+
+def main():
+    REQUEST_KWARGS = {
+        'proxy_url': 'socks5h://geek:socks@t.geekclass.ru:7777'
+    }
+    updater = Updater("1156438301:AAFDrWFKvxh3zQFoHWh6trKSii8CVoODdbw", use_context=True,
+                      request_kwargs=REQUEST_KWARGS)
+    dp = updater.dispatcher
+    text_handler = MessageHandler(Filters.text, send_message)
+    dp.add_handler(CommandHandler('start', start))
+    dp.add_handler(text_handler)
+    print('Telegram bot started')
+    updater.start_polling()
+    updater.idle()
 
 
 length = 0
