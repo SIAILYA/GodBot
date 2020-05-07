@@ -1,6 +1,10 @@
 from telegram.ext import Updater, MessageHandler, Filters
 from telegram.ext import CallbackContext, CommandHandler
 from telegram import ReplyKeyboardMarkup
+from bot import GodBotVk
+
+
+print(GodBotVk.text)
 
 
 def start(update, context):
