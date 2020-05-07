@@ -29,8 +29,7 @@ from telegram.ext import CallbackContext, CommandHandler
 
 
 # TODO:
-#  1. Кик пользователя
-#  2. Бан и мут пользователя (+ соотв проверки)
+#  1. Бан и мут пользователя (+ соотв проверки)
 
 
 class GodBotVk:
@@ -376,11 +375,12 @@ class GodBotVk:
 
         if 'payload' in message_object:
             self.payload_handler(event)
-
+            return None
         if command in ['upd', 'update', 'обновить']:
             self.VkApi.message_send(peer_id, 'Обновляю информацию о беседе...')
             time = self.update_all_conference_info(peer_id)
             self.VkApi.message_send(peer_id, f'Информация обновлена за {time:1.2f} сек.')
+            return None
         if command in ['стата', 'актив', 'активность', 'статистика', 'stat']:
             matplotlib.rcParams.update({'font.size': 10})
             x, y = self.get_week_statistics(from_id, peer_id)
@@ -395,6 +395,7 @@ class GodBotVk:
                                     attachment=self.VkApi.upload_photo('plot.png'))
 
             remove('plot.png')
+            return None
         if command in ['kick', 'кик', 'выгнать']:
             kicked_id = None
             try:
@@ -410,6 +411,7 @@ class GodBotVk:
                     self.user_kick(peer_id, kicked_id)
                 except vk_api.exceptions.ApiError:
                     self.VkApi.message_send(peer_id, 'Невозможно выгнать этого пользователя 😦')
+            return None
         if command in ['варн', 'предупреждение', 'warn']:
             warn_id = from_id  # Кто кикает
             warned_id = None  # Кого кикнуть
@@ -442,6 +444,7 @@ class GodBotVk:
                             self.user_kick(peer_id, warned_id)
                         except vk_api.exceptions.ApiError:
                             self.VkApi.message_send(peer_id, 'Невозможно выгнать этого пользователя 😦')
+            return None
         if command in ['автокик']:
             try:
                 turn = text.lstrip('/!;').split()[1]
@@ -460,7 +463,7 @@ class GodBotVk:
                         self.VkApi.message_send(peer_id, 'Недостаточно прав!')
             except IndexError:
                 pass
-
+            return None
         if command in ['приветствие', 'привет', 'хай']:
             try:
                 msg = ' '.join(text.lstrip('/!;').split()[1:])
@@ -473,12 +476,7 @@ class GodBotVk:
                     self.VkApi.message_send(peer_id, 'Недостаточно прав!')
             except IndexError:
                 pass
-        if command in ['автокик']:
-            pass
-        if command in ['автокик']:
-            pass
-        if command in ['автокик']:
-            pass
+            return None
 
 
 if __name__ == '__main__':
