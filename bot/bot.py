@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 from os import remove
 
-import matplotlib
-import matplotlib.pyplot as plt
+# import matplotlib
+# import matplotlib.pyplot as plt
 import pendulum
 import sqlalchemy
 import vk_api
@@ -377,24 +377,24 @@ class GodBotVk:
         if 'payload' in message_object:
             self.payload_handler(event)
 
-        if command in ['upd', 'update', 'обновить']:
-            self.VkApi.message_send(peer_id, 'Обновляю информацию о беседе...')
-            time = self.update_all_conference_info(peer_id)
-            self.VkApi.message_send(peer_id, f'Информация обновлена за {time:1.2f} сек.')
-        if command in ['стата', 'актив', 'активность', 'статистика', 'stat']:
-            matplotlib.rcParams.update({'font.size': 10})
-            x, y = self.get_week_statistics(from_id, peer_id)
-            fig = plt.figure()
-            ax = plt.subplot(111)
-            ax.plot(x, y)
-            plt.title('Статистика сообщений')
-            fig.savefig('plot.png')
-
-            self.VkApi.message_send(peer_id,
-                                    f'Твоя статистика сообщений за последнюю неделю:',
-                                    attachment=self.VkApi.upload_photo('plot.png'))
-
-            remove('plot.png')
+        # if command in ['upd', 'update', 'обновить']:
+        #     self.VkApi.message_send(peer_id, 'Обновляю информацию о беседе...')
+        #     time = self.update_all_conference_info(peer_id)
+        #     self.VkApi.message_send(peer_id, f'Информация обновлена за {time:1.2f} сек.')
+        # if command in ['стата', 'актив', 'активность', 'статистика', 'stat']:
+        #     matplotlib.rcParams.update({'font.size': 10})
+        #     x, y = self.get_week_statistics(from_id, peer_id)
+        #     fig = plt.figure()
+        #     ax = plt.subplot(111)
+        #     ax.plot(x, y)
+        #     plt.title('Статистика сообщений')
+        #     fig.savefig('plot.png')
+        #
+        #     self.VkApi.message_send(peer_id,
+        #                             f'Твоя статистика сообщений за последнюю неделю:',
+        #                             attachment=self.VkApi.upload_photo('plot.png'))
+        #
+        #     remove('plot.png')
         if command in ['kick', 'кик', 'выгнать']:
             kicked_id = None
             try:

@@ -31,8 +31,9 @@ def task(context):
     with open('logs.txt') as logs:
         answers = logs.readlines()
         if len(answers) != length:
-            context.bot.send_message(job.context, text=' '.join(answers[length].split()[:-4]))
+            context.bot.send_message(job.context, text=' '.join(answers[length - 1].split()[:-4]))
             length += 1
+        print(answers)
 
 
 def send_message(update, context):
