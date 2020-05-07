@@ -1,11 +1,36 @@
-{% extends base.html %}
+{% extends "base.html" %}
 {% block css_enable %}
     <link rel="stylesheet" href="static/css/panel.css">
 {% endblock %}
 
 {% block content %}
-    {% for conf in user_conferences %} #\
-        {{ conf }}
-        {#TODO: Реализовать красивую таблицу с беседами, в которых есть пользователь#}
-    {% endfor %}
+    <div class="container table">
+        <div class="col-md-10 offset-1">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col"></th>
+                    <th scope="col">Название</th>
+                    <th scope="col">Участники</th>
+                    <th scope="col">Сообщений</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for conf in user_conferences %}
+
+                    <tr>
+                        <th scope="row">{{ loop.index }}</th>
+                        <td><a href="/manage/{{ conf.conference_id }}"><img src="{{ conf.photo }}" alt="" width="50px"></a>
+                        </td>
+                        <td><a href="/manage/{{ conf.conference_id }}">{{ conf.title }}</a></td>
+                        <td>{{ conf.members|length }}</td>
+                        <td>{{ conf.msg_count }}</td>
+                    </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+    </div>
 {% endblock %}

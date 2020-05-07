@@ -8,12 +8,8 @@ import sqlalchemy
 import vk_api
 from tools.api import VkApi, find_member_info
 from tools.loaders import message_loader, photo_loader
-from tools.other import event_pprint
 from vk_api.bot_longpoll import VkBotEventType
 from time import asctime
-import sys
-
-from user_management import new_user, new_conf_user
 
 from keyboards import kick_keyboard
 from panel.data import db_session
@@ -24,12 +20,33 @@ from panel.data.models.conferences_queue import ConferencesQueue
 from panel.data.models.staistics import Statistics
 
 
-from telegram.ext import Updater, MessageHandler, Filters
-from telegram.ext import CallbackContext, CommandHandler
+def new_user(member):
+    user = User()
+
+    user.user_id = member['id']
+    user.name = member['first_name']
+    user.surname = member['last_name']
+    user.sex = member['sex']
+    user.is_closed = member['is_closed']
+
+    return user
 
 
-# TODO:
-#  1. Бан и мут пользователя (+ соотв проверки)
+def new_conf_user(member, peer_id, members_info):
+    conference_user = ConferenceUser()
+
+    conference_user.user_id = member['id']
+    conference_user.conference_id = peer_id
+    conference_user.invited_by, \
+    conference_user.is_admin, \
+    conference_user.is_owner, \
+    conference_user.join_date = find_member_info(member['id'], members_info['items'])
+
+    if conference_user.is_admin:
+        conference_user.kick = True
+        conference_user.warn = True
+
+    return conference_user
 
 
 class GodBotVk:

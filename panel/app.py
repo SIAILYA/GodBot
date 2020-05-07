@@ -60,7 +60,12 @@ def panel():
     session = create_session()
     # TODO: Сделать панель
     return render_template('general_panel.html', title='Панель моя панель',
-                           user_conferences=session.query(User.conferences))
+                           user_conferences=session.query(User).filter(User.user_id == 223632391).first().conferences)
+
+
+@app.route('/login')
+def login():
+    pass
 
 
 if __name__ == '__main__':

@@ -1,0 +1,11 @@
+.table {
+    margin-top: 40px;
+}
+
+a {
+    color: black;
+}
+
+a:hover {
+    color: #5d26c1;
+}
