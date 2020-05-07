@@ -1,11 +1,14 @@
 from datetime import datetime, timedelta
+from os import remove
 
+import matplotlib
 import pendulum
 import sqlalchemy
 from tools.api import VkApi, find_member_info
 from tools.loaders import message_loader, photo_loader
 from tools.other import event_pprint
 from vk_api.bot_longpoll import VkBotEventType
+import matplotlib.pyplot as plt
 
 from user_management import new_user, new_conf_user
 from panel.data import db_session
@@ -137,6 +140,7 @@ class GodBotVk:
             stat.member_id = member['id']
 
             new_conference.members.append(user)
+            user.conferences.append(new_conference)
 
             self.session.add(user)
             self.session.add(stat)
@@ -148,6 +152,7 @@ class GodBotVk:
         :param peer_id:
         :return:
         """
+        timer = pendulum.now()
         conference_info = self.VkApi.get_conference_info(peer_id)
         members_info = self.VkApi.get_members(peer_id)
         conference = self.session.query(Conference).filter(Conference.conference_id == peer_id).first()
@@ -158,8 +163,15 @@ class GodBotVk:
         conference.pinned_message_id = conference_info['chat_settings']['pinned_message'][
             'conversation_message_id']
 
+        for member in conference.members:
+            cu = self.session.query(ConferenceUser).filter(ConferenceUser.conference_id == peer_id,
+                                                           ConferenceUser.user_id == member.user_id).first()
+            cu.is_leave = True
+            member.conferences.remove(conference)
+            conference.members.remove(member)
+
         for member in members_info['profiles']:
-            user = self.session.query(User).filter(User.user_id == member['id'])
+            user = self.session.query(User).filter(User.user_id == member['id']).first()
             conference_user = self.session.query(ConferenceUser).filter(ConferenceUser.conference_id == peer_id,
                                                                         ConferenceUser.user_id == member['id']).first()
             if user:
@@ -167,11 +179,15 @@ class GodBotVk:
                 user.surname = member['last_name']
                 user.sex = member['sex']
                 user.is_closed = member['is_closed']
+                user.conferences.append(conference)
+                user.conferences.append(conference)
+                conference.members.append(user)
             else:
                 user = new_user(member)
                 self.session.add(user)
 
             if conference_user:
+                conference_user.is_leave = False
                 conference_user.invited_by, \
                 conference_user.is_admin, \
                 conference_user.is_owner, \
@@ -190,6 +206,7 @@ class GodBotVk:
                 stat.member_id = member['id']
                 self.session.add(conference_user)
                 self.session.add(stat)
+        return float(str(timer.diff(pendulum.now()).as_timedelta()).lstrip('0:00:0'))
 
     def user_kick(self, peer_id, user_id):
         if user_id > 0:
@@ -245,6 +262,10 @@ class GodBotVk:
         from_id = message_object['from_id']
         conf_user = self.session.query(ConferenceUser).filter(ConferenceUser.user_id == from_id,
                                                               ConferenceUser.conference_id == peer_id).first()
+
+        if from_id < 0:
+            return 0
+
         conference = conf_user.conference
         user = conf_user.user
         statistics = self.session.query(Statistics).filter(Statistics.member_id == from_id,
@@ -264,9 +285,8 @@ class GodBotVk:
 
         statistics.inc(datetime.now().hour)
 
-        self.get_week_statistics(from_id, peer_id)
-
-        self.session.commit()
+        if text[0] in '!/;':
+            self.command_handler(text, event)
 
     def user_conf_msg_count_total(self, member_id, peer_id):
         statistics = self.session.query(Statistics).filter(Statistics.member_id == member_id,
@@ -288,7 +308,31 @@ class GodBotVk:
             else:
                 stats.append(0)
 
-        return dates, stats
+        return list(reversed([str(d).replace('2020-', '') for d in dates])), list(reversed(stats))
+
+    def command_handler(self, text, event):
+        command = text.lstrip('/!;')
+        peer_id = event.obj.message['peer_id']
+        from_id = event.obj.message['from_id']
+
+        if command in ['upd', 'update', 'обновить']:
+            self.VkApi.message_send(peer_id, 'Обновляю информацию о беседе...')
+            time = self.update_all_conference_info(peer_id)
+            self.VkApi.message_send(peer_id, f'Информация обновлена за {time:1.2f} сек.')
+        if command in ['стата', 'актив', 'активность', 'статистика', 'stat']:
+            matplotlib.rcParams.update({'font.size': 10})
+            x, y = self.get_week_statistics(from_id, peer_id)
+            fig = plt.figure()
+            ax = plt.subplot(111)
+            ax.plot(x, y)
+            plt.title('Статистика сообщений')
+            fig.savefig('plot.png')
+
+            self.VkApi.message_send(peer_id,
+                                    f'Твоя статистика сообщений за последнюю неделю:',
+                                    attachment=self.VkApi.upload_photo('plot.png'))
+
+            remove('plot.png')
 
 
 if __name__ == '__main__':
