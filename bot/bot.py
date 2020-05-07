@@ -1,17 +1,23 @@
 from datetime import datetime, timedelta
 from os import remove
 
-# import matplotlib
-# import matplotlib.pyplot as plt
+import matplotlib
+import matplotlib.pyplot as plt
 import pendulum
 import sqlalchemy
 import vk_api
-from tools.api import VkApi, find_member_info
-from tools.loaders import message_loader, photo_loader
+
+try:
+    from bot.api import VkApi, find_member_info
+    from bot.loaders import message_loader, photo_loader
+    from bot.keyboards import kick_keyboard
+except ModuleNotFoundError:
+    from api import VkApi, find_member_info
+    from loaders import message_loader, photo_loader
+    from keyboards import kick_keyboard
 from vk_api.bot_longpoll import VkBotEventType
 from time import asctime
 
-from keyboards import kick_keyboard
 from panel.data import db_session
 from panel.data.models.all_conferences import Conference
 from panel.data.models.all_users import User
@@ -59,16 +65,13 @@ class GodBotVk:
             self.session = db_session.create_session()
 
     def start_pooling(self):
+        print('VK bot is started!')
+
         for event in self.VkApi.LongPool.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:
-
-                # print(event)
-
                 message_object = event.obj.message
                 if message_object['peer_id'] > 2000000000:  # Беседки
-                    timer = pendulum.now()
                     self.conference(event)
-                    processing_time = timer.diff(pendulum.now()).as_timedelta()
                 else:  # Люди и нелюди
                     self.text = message_object['text']
                     name = self.VkApi.get_user_name(message_object['from_id'])
@@ -516,11 +519,17 @@ class GodBotVk:
             except IndexError:
                 pass
             return None
+        if command in ['panel', 'панель', 'веб']:
+            self.VkApi.message_send(peer_id, f'Веб панель доступа по адресу {open("ngrok_address.txt", "r").read()}')
 
 
-if __name__ == '__main__':
+def main():
     GB = GodBotVk()
     GB.start_pooling()
-    # Обновление статистики:
-    # confs = [conf.conference_id for conf in GB.session.query(Conference).all()]
-    # [GB.update_conference_messages(i) for i in confs]
+
+# if __name__ == '__main__':
+#     GB = GodBotVk()
+#     GB.start_pooling()
+#     # Обновление статистики:
+#     # confs = [conf.conference_id for conf in GB.session.query(Conference).all()]
+#     # [GB.update_conference_messages(i) for i in confs]

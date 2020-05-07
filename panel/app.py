@@ -1,5 +1,6 @@
 from flask import Flask, render_template, redirect
 from flask_login import login_user, LoginManager
+from flask_ngrok import run_with_ngrok
 
 from panel.data import db_session
 from panel.data.db_session import create_session
@@ -23,7 +24,9 @@ login_manager.init_app(app)
 
 
 def main():
+    print('Web-panel is started!')
     db_session.global_init()
+    run_with_ngrok(app)
     app.run()
 
 
