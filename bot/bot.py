@@ -7,6 +7,7 @@ from tools.api import VkApi, find_member_info
 from tools.loaders import message_loader, photo_loader
 from tools.other import event_pprint
 from vk_api.bot_longpoll import VkBotEventType
+from time import asctime
 import sys
 
 from user_management import new_user, new_conf_user
@@ -41,7 +42,6 @@ class GodBotVk:
                 # print('=====================')
 
                 message_object = event.obj.message
-                print(message_object)
                 if message_object['peer_id'] > 2000000000:  # Беседки
                     timer = pendulum.now()
                     self.conference(event)
@@ -49,8 +49,9 @@ class GodBotVk:
                 else:  # Люди и нелюди
                     self.text = message_object['text']
                     name = self.VkApi.get_user_name(message_object['from_id'])
+                    time = asctime().split()
                     with open('logs.txt', 'a') as logs:
-                        logs.write(' '.join(name) + ': ' + self.text)
+                        logs.write(' '.join(name) + ': ' + self.text + ' | ' + time[1] + ' ' + time[2] + ' ' + time[-2] + '\n')
                 self.session.commit()
 
     def conference(self, event):
