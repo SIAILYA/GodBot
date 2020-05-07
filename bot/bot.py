@@ -77,6 +77,15 @@ class GodBotVk:
                         logs.write(' '.join(name) + ': ' + self.text + ' | ' + time[1] + ' ' + time[2] + ' ' + time[-2] + '\n')
                 self.session.commit()
 
+    def update_conference_messages(self, peer_id):
+        conference = self.session.query(Conference).filter(Conference.conference_id == peer_id).first()
+        msg_sum = 0
+
+        for st in self.session.query(Statistics).filter(Statistics.conference_id == peer_id).all():
+            msg_sum += st.sum()
+        conference.msg_count = msg_sum
+        self.session.commit()
+
     def conference(self, event):
         message_object = event.obj.message
         peer_id = message_object['peer_id']
@@ -170,13 +179,23 @@ class GodBotVk:
         new_conference.conference_id = peer_id
         new_conference.owner = conference_info['chat_settings']['owner_id']
         new_conference.title = conference_info['chat_settings']['title']
-        new_conference.photo = conference_info['chat_settings']['photo']['photo_200']
-        new_conference.pinned_message_id = conference_info['chat_settings']['pinned_message'][
-            'conversation_message_id']
+        try:
+            new_conference.photo = conference_info['chat_settings']['photo']['photo_200']
+        except KeyError:
+            new_conference.photo = '/images/camera_50.png?ava=1'
+        try:
+            new_conference.pinned_message_id = conference_info['chat_settings']['pinned_message'][
+                'conversation_message_id']
+        except KeyError:
+            new_conference.pinned_message_id = 0
+
         self.session.add(new_conference)
 
         for member in members_info['profiles']:
-            user = new_user(member)
+            user = self.session.query(User).filter(User.user_id == member['id']).first()
+            if not user:
+                user = new_user(member)
+                self.session.add(user)
             conference_user = new_conf_user(member, peer_id, members_info)
             stat = Statistics()
             stat.conference_id = peer_id
@@ -185,7 +204,6 @@ class GodBotVk:
             new_conference.members.append(user)
             user.conferences.append(new_conference)
 
-            self.session.add(user)
             self.session.add(stat)
             self.session.add(conference_user)
 
@@ -497,4 +515,8 @@ class GodBotVk:
 
 
 if __name__ == '__main__':
-    GodBotVk().start_pooling()
+    GB = GodBotVk()
+    GB.start_pooling()
+    # Обновление статистики:
+    # confs = [conf.conference_id for conf in GB.session.query(Conference).all()]
+    # [GB.update_conference_messages(i) for i in confs]
