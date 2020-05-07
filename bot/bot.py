@@ -1,14 +1,13 @@
 from datetime import datetime, timedelta
 from os import remove
 
-import matplotlib
 import pendulum
 import sqlalchemy
 from tools.api import VkApi, find_member_info
 from tools.loaders import message_loader, photo_loader
 from tools.other import event_pprint
 from vk_api.bot_longpoll import VkBotEventType
-import matplotlib.pyplot as plt
+import sys
 
 from user_management import new_user, new_conf_user
 from panel.data import db_session
@@ -17,10 +16,6 @@ from panel.data.models.all_users import User
 from panel.data.models.conference_user import ConferenceUser
 from panel.data.models.conferences_queue import ConferencesQueue
 from panel.data.models.staistics import Statistics
-
-
-from telegram.ext import Updater, MessageHandler, Filters
-from telegram.ext import CallbackContext, CommandHandler
 
 
 # TODO:
@@ -53,6 +48,9 @@ class GodBotVk:
                 else:  # Люди и нелюди
                     self.text = event.obj.message['text']
                     print(self.text, 'vk')
+                    
+                    with open('logs', 'w') as logs:
+                        logs.write(str(self.text))
                 self.session.commit()
 
     def conference(self, event):
@@ -320,24 +318,24 @@ class GodBotVk:
         peer_id = event.obj.message['peer_id']
         from_id = event.obj.message['from_id']
 
-        if command in ['upd', 'update', 'обновить']:
-            self.VkApi.message_send(peer_id, 'Обновляю информацию о беседе...')
-            time = self.update_all_conference_info(peer_id)
-            self.VkApi.message_send(peer_id, f'Информация обновлена за {time:1.2f} сек.')
-        if command in ['стата', 'актив', 'активность', 'статистика', 'stat']:
-            matplotlib.rcParams.update({'font.size': 10})
-            x, y = self.get_week_statistics(from_id, peer_id)
-            fig = plt.figure()
-            ax = plt.subplot(111)
-            ax.plot(x, y)
-            plt.title('Статистика сообщений')
-            fig.savefig('plot.png')
-
-            self.VkApi.message_send(peer_id,
-                                    f'Твоя статистика сообщений за последнюю неделю:',
-                                    attachment=self.VkApi.upload_photo('plot.png'))
-
-            remove('plot.png')
+        # if command in ['upd', 'update', 'обновить']:
+        #     self.VkApi.message_send(peer_id, 'Обновляю информацию о беседе...')
+        #     time = self.update_all_conference_info(peer_id)
+        #     self.VkApi.message_send(peer_id, f'Информация обновлена за {time:1.2f} сек.')
+        # if command in ['стата', 'актив', 'активность', 'статистика', 'stat']:
+        #     matplotlib.rcParams.update({'font.size': 10})
+        #     x, y = self.get_week_statistics(from_id, peer_id)
+        #     fig = plt.figure()
+        #     ax = plt.subplot(111)
+        #     ax.plot(x, y)
+        #     plt.title('Статистика сообщений')
+        #     fig.savefig('plot.png')
+        #
+        #     self.VkApi.message_send(peer_id,
+        #                             f'Твоя статистика сообщений за последнюю неделю:',
+        #                             attachment=self.VkApi.upload_photo('plot.png'))
+        #
+        #     remove('plot.png')
 
 
 if __name__ == '__main__':
