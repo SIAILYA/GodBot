@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pendulum
 import sqlalchemy
@@ -240,6 +240,7 @@ class GodBotVk:
 
     def conference_message(self, event):
         message_object = event.obj.message
+        text = message_object['text']
         peer_id = message_object['peer_id']
         from_id = message_object['from_id']
         conf_user = self.session.query(ConferenceUser).filter(ConferenceUser.user_id == from_id,
@@ -249,13 +250,45 @@ class GodBotVk:
         statistics = self.session.query(Statistics).filter(Statistics.member_id == from_id,
                                                            Statistics.conference_id == peer_id,
                                                            Statistics.date == datetime.now().date()).first()
+        try:
+            statistics.inc(datetime.now().hour)
+        except AttributeError:
+            statistics = Statistics(date=datetime.now().date(),
+                                    member_id=from_id,
+                                    conference_id=peer_id)
+            self.session.add(statistics)
+
+        statistics = self.session.query(Statistics).filter(Statistics.member_id == from_id,
+                                                           Statistics.conference_id == peer_id,
+                                                           Statistics.date == datetime.now().date()).first()
 
         statistics.inc(datetime.now().hour)
+
+        self.get_week_statistics(from_id, peer_id)
+
+        self.session.commit()
 
     def user_conf_msg_count_total(self, member_id, peer_id):
         statistics = self.session.query(Statistics).filter(Statistics.member_id == member_id,
                                                            Statistics.conference_id == peer_id).all()
         return sum([day.sum() for day in statistics])
+
+    def get_week_statistics(self, member_id, peer_id):
+        def get_back_date(days):
+            return datetime.now().date() - timedelta(days=days)
+
+        dates = list(map(get_back_date, list(range(7))))
+        stats = []
+        for date in dates:
+            statistics = self.session.query(Statistics).filter(Statistics.member_id == member_id,
+                                                               Statistics.date == date,
+                                                               Statistics.conference_id == peer_id).first()
+            if statistics:
+                stats.append(statistics.sum())
+            else:
+                stats.append(0)
+
+        return dates, stats
 
 
 if __name__ == '__main__':

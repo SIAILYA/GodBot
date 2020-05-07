@@ -26,7 +26,7 @@ def global_init(db_name='main_db'):
     __factory = orm.sessionmaker(bind=engine)
 
     SqlAlchemyBase.metadata.create_all(engine)
-    # print('db is init!')
+    print('connected to db!')
 
 
 def create_session() -> Session:
