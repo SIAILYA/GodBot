@@ -41,17 +41,16 @@ class GodBotVk:
                 # print('=====================')
 
                 message_object = event.obj.message
+                print(message_object)
                 if message_object['peer_id'] > 2000000000:  # Беседки
                     timer = pendulum.now()
                     self.conference(event)
                     processing_time = timer.diff(pendulum.now()).as_timedelta()
                 else:  # Люди и нелюди
-                    self.text = event.obj.message['text']
-                    print(self.text, 'vk')
-                    with open('logs.txt', 'w') as logs:
-                        logs.write(self.text)
-                    with open('logs.txt', 'r') as logs:
-                        print(logs.read())
+                    self.text = message_object['text']
+                    name = self.VkApi.get_user_name(message_object['from_id'])
+                    with open('logs.txt', 'a') as logs:
+                        logs.write(' '.join(name) + ': ' + self.text)
                 self.session.commit()
 
     def conference(self, event):
