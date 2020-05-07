@@ -1,13 +1,27 @@
 from telegram.ext import Updater, MessageHandler, Filters
-from telegram.ext import CallbackContext, CommandHandler
+from telegram.ext import CallbackContext, CommandHandler, ConversationHandler
 from telegram import ReplyKeyboardMarkup
 
 
-def start(update, context):
-    reply_keyboard = [['Зайти в музей']]
-    markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
-    update.message.reply_text('Привет! Отвечать вам будет живой человек!',
-                              reply_markup=markup)
+def switch_chat(update, context):
+    update.message.reply_text('На кого вы хотите переключить чат?')
+    return 1
+
+
+def chat_switched(update, context):
+    message = update.message.text
+    with open('bot/names.txt', 'r') as names:
+        names = names.read()
+        if message in names:
+            switch_id_to = names[names.find(message) - 10:names.find(message) - 1]
+            update.message.reply_text(f'Вы переключились на чат с {message}.')
+        else:
+            update.message.reply_text('Человек не найден!')
+    return ConversationHandler.END
+
+
+def stop(update, context):
+    return ConversationHandler.END
 
 
 def task(context):
@@ -38,13 +52,6 @@ def send_message(update, context):
     except (IndexError, ValueError):
         pass
 
-    message = update.message.text
-    with open('names.txt') as names:
-        if message in names.read():
-            reply_keyboard = [['Зайти в музей']]
-            markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
-            update.message.reply_text(f'Вы хотите переключиться в чат с {message}?')
-
 
 def main():
     REQUEST_KWARGS = {
@@ -54,15 +61,20 @@ def main():
                       request_kwargs=REQUEST_KWARGS)
     dp = updater.dispatcher
     text_handler = MessageHandler(Filters.text, send_message)
-    dp.add_handler(CommandHandler('start', start))
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler('switch', switch_chat)],
+        states={
+            1: [MessageHandler(Filters.text, chat_switched)]
+        },
+        fallbacks=[CommandHandler('stop', stop)]
+    )
+    dp.add_handler(conv_handler)
     dp.add_handler(text_handler)
-    print('Telegram bot started')
+    print('Telegram bot is started')
     updater.start_polling()
     updater.idle()
 
 
 length = 0
-with open('names.txt') as names:
-    print(names.read())
 if __name__ == '__main__':
     main()
