@@ -48,9 +48,10 @@ class GodBotVk:
                 else:  # Люди и нелюди
                     self.text = event.obj.message['text']
                     print(self.text, 'vk')
-                    
-                    with open('logs', 'w') as logs:
-                        logs.write(str(self.text))
+                    with open('logs.txt', 'w') as logs:
+                        logs.write(self.text)
+                    with open('logs.txt', 'r') as logs:
+                        print(logs.read())
                 self.session.commit()
 
     def conference(self, event):
