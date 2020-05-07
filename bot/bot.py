@@ -19,6 +19,10 @@ from panel.data.models.conferences_queue import ConferencesQueue
 from panel.data.models.staistics import Statistics
 
 
+from telegram.ext import Updater, MessageHandler, Filters
+from telegram.ext import CallbackContext, CommandHandler
+
+
 # TODO:
 #  1. Кик пользователя
 #  2. Бан и мут пользователя (+ соотв проверки)
@@ -47,7 +51,8 @@ class GodBotVk:
                     self.conference(event)
                     processing_time = timer.diff(pendulum.now()).as_timedelta()
                 else:  # Люди и нелюди
-                    print(3)
+                    self.text = event.obj.message['text']
+                    print(self.text, 'vk')
                 self.session.commit()
 
     def conference(self, event):
