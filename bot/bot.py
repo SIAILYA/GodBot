@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from os import remove
 
 import matplotlib
+import matplotlib.pyplot as plt
 import pendulum
 import sqlalchemy
 import vk_api
@@ -92,13 +93,29 @@ class GodBotVk:
 
     def chat_action(self, message_object):
         action = message_object['action']
+        peer_id = message_object['peer_id']
         if action['type'] == 'chat_invite_user':
             if action['member_id'] == -194017842:
                 self.invite_in_chat(message_object)
             else:
                 self.invite_new_user(message_object)
+                self.VkApi.message_send(peer_id, self.get_instances(message_object['peer_id'], 0,
+                                                                    conference=True)['conference'].hello_message)
         elif action['type'] == 'chat_kick_user':
-            self.user_kick(message_object['peer_id'], action['member_id'])
+            self.user_kick(peer_id, action['member_id'])
+            inst = self.get_instances(peer_id, action['member_id'], conference=True, user=True)
+            if not inst['conference'].auto_kick:
+                self.VkApi.message_send(peer_id, f'@id{action["member_id"]}({inst["user"].name}) ливнул\n'
+                                                 f'В беседе отключена функция авто-кика',
+                                        keyboard=kick_keyboard(action['member_id']))
+            else:
+                self.VkApi.message_send(peer_id, f'@id{action["member_id"]}({inst["user"].name}) ливнул\n'
+                                                 f'Выгоняем...')
+                try:
+                    self.VkApi.kick_user(peer_id - 2000000000, action["member_id"])
+                except vk_api.exceptions.ApiError:
+                    self.VkApi.message_send(peer_id, 'Невозможно выгнать этого пользователя 😦')
+
         elif action['type'] == 'chat_photo_update':
             pass
         elif action['type'] == 'chat_title_update':
@@ -177,8 +194,6 @@ class GodBotVk:
             cu = self.session.query(ConferenceUser).filter(ConferenceUser.conference_id == peer_id,
                                                            ConferenceUser.user_id == member.user_id).first()
             cu.is_leave = True
-            member.conferences.remove(conference)
-            conference.members.remove(member)
 
         for member in members_info['profiles']:
             user = self.session.query(User).filter(User.user_id == member['id']).first()
@@ -189,7 +204,6 @@ class GodBotVk:
                 user.surname = member['last_name']
                 user.sex = member['sex']
                 user.is_closed = member['is_closed']
-                user.conferences.append(conference)
                 user.conferences.append(conference)
                 conference.members.append(user)
             else:
@@ -225,8 +239,6 @@ class GodBotVk:
             conference_user = self.session.query(ConferenceUser).filter(ConferenceUser.conference_id == peer_id,
                                                                         ConferenceUser.user_id == user_id).first()
 
-            user.conferences.remove(conference)
-            conference.members.remove(user)
             conference_user.set_defaults()
             conference_user.is_leave = True
             conference_user.kicks += 1
@@ -352,6 +364,7 @@ class GodBotVk:
             if not kicked_inst.kick_immunity and kick_inst.kick:
                 try:
                     self.VkApi.kick_user(peer_id - 2000000000, kicked_id)
+                    self.user_kick(peer_id, kicked_id)
                 except vk_api.exceptions.ApiError:
                     self.VkApi.message_send(peer_id, 'Невозможно выгнать этого пользователя 😦')
 
@@ -383,23 +396,23 @@ class GodBotVk:
 
             remove('plot.png')
         if command in ['kick', 'кик', 'выгнать']:
-            kick_id = None
+            kicked_id = None
             try:
-                kick_id = int(text.lstrip('/!;').split()[1])
+                kicked_id = int(text.lstrip('/!;').split()[1])
             except IndexError:
                 if 'reply_message' in message_object:
-                    kick_id = message_object['reply_message']['from_id']
+                    kicked_id = message_object['reply_message']['from_id']
                 elif len(message_object['fwd_messages']):
-                    kick_id = message_object['fwd_messages'][0]['from_id']
-            if kick_id:
+                    kicked_id = message_object['fwd_messages'][0]['from_id']
+            if kicked_id:
                 try:
-                    self.VkApi.kick_user(peer_id - 2000000000, kick_id)
+                    self.VkApi.kick_user(peer_id - 2000000000, kicked_id)
+                    self.user_kick(peer_id, kicked_id)
                 except vk_api.exceptions.ApiError:
                     self.VkApi.message_send(peer_id, 'Невозможно выгнать этого пользователя 😦')
         if command in ['варн', 'предупреждение', 'warn']:
             warn_id = from_id  # Кто кикает
             warned_id = None  # Кого кикнуть
-
             try:
                 warned_id = int(text.lstrip('/!;').split()[1])
             except IndexError:
@@ -421,10 +434,51 @@ class GodBotVk:
                                                          f'3 предупреждения. В беседе отключена функция авто-кика',
                                                 keyboard=kick_keyboard(warned_id))
                     else:
-                        self.VkApi.message_send(peer_id, f'@id{warned_id}({warned_inst["user"].name}) получил '
+                        self.VkApi.message_send(peer_id, f'@id{warned_id}({warned_inst["user"].name}) получил свои'
                                                          f'3 предупреждения. Выгоняем...',
                                                 keyboard=kick_keyboard(warned_id))
-                        self.VkApi.kick_user(peer_id, warned_id)
+                        try:
+                            self.VkApi.kick_user(peer_id - 2000000000, warned_id)
+                            self.user_kick(peer_id, warned_id)
+                        except vk_api.exceptions.ApiError:
+                            self.VkApi.message_send(peer_id, 'Невозможно выгнать этого пользователя 😦')
+        if command in ['автокик']:
+            try:
+                turn = text.lstrip('/!;').split()[1]
+                inst = self.get_instances(peer_id, from_id, conf_user=True, conference=True)
+                if turn in ['1', 'вкл', 'on']:
+                    if inst['conf_user'].is_admin:
+                        inst['conference'].auto_kick = True
+                        self.VkApi.message_send(peer_id, 'Автокик включен!')
+                    else:
+                        self.VkApi.message_send(peer_id, 'Недостаточно прав!')
+                elif turn in ['0', 'выкл', 'off']:
+                    if inst['conf_user'].is_admin:
+                        inst['conference'].auto_kick = False
+                        self.VkApi.message_send(peer_id, 'Автокик выключен!')
+                    else:
+                        self.VkApi.message_send(peer_id, 'Недостаточно прав!')
+            except IndexError:
+                pass
+
+        if command in ['приветствие', 'привет', 'хай']:
+            try:
+                msg = ' '.join(text.lstrip('/!;').split()[1:])
+                inst = self.get_instances(peer_id, from_id, conf_user=True, conference=True)
+                if inst['conf_user'].is_admin and 'подпишись' not in msg:
+                    inst['conference'].hello_message = msg
+                    self.VkApi.message_send(peer_id, f'Новое приветствие установлено!\n'
+                                                     f'{msg}')
+                else:
+                    self.VkApi.message_send(peer_id, 'Недостаточно прав!')
+            except IndexError:
+                pass
+        if command in ['автокик']:
+            pass
+        if command in ['автокик']:
+            pass
+        if command in ['автокик']:
+            pass
 
 
 if __name__ == '__main__':
