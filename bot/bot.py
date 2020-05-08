@@ -73,7 +73,6 @@ class GodBotVk:
                 if message_object['peer_id'] > 2000000000:  # Беседки
                     self.conference(event)
                 else:  # Люди и нелюди
-                    self.send_personal()
                     self.text = message_object['text']
                     name = self.VkApi.get_user_name(message_object['from_id'])
                     time = asctime().split()
@@ -523,9 +522,6 @@ class GodBotVk:
             return None
         if command in ['panel', 'панель', 'веб']:
             self.VkApi.message_send(peer_id, f'Веб панель доступа по адресу {open("ngrok_address.txt", "r").read()}')
-
-    def send_personal(self):
-        self.VkApi.message_send(222383631, 'Ура')
 
 
 def main():

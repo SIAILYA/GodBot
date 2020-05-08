@@ -3,6 +3,7 @@ from time import sleep
 
 
 def main():
+    print('VK checker is started!')
     length = 0
     while True:
         sleep(1)

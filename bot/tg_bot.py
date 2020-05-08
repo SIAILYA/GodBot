@@ -58,13 +58,11 @@ def start(update, context):
 
 def send_message(update, context):
     friend = context.user_data['friend']
-    print(friend, 'end')
     if friend:
         text = update.message.text
         time = asctime().split()
         with open('bot/logs/from_tg_to_vk.txt', 'a') as logs:
             logs.write(friend + ' ' + text + ' | ' + time[1] + ' ' + time[2] + ' ' + time[-2] + '\n')
-        print(text)
     else:
         update.message.reply_text('Выберите друга!')
 
