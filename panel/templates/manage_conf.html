@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block css_enable %}
+    <link rel="stylesheet" href="static/css/panel.css">
+{% endblock %}
+
+{% block content %}
+    <div class="container text-center" style="margin-top: 30px">
+        <h2 class="color-purple">Управление беседой</h2>
+        <div class="col-md-8 offset-2" style="margin-top: 30px;">
+            <div class="row">
+                <div class="photo">
+                    <img src="{{ conference.photo }}" alt="conference photo"
+                         style="border: #59c173 solid 2px; border-radius: 15px">
+                </div>
+                <div class="title text-left" style="margin-left: 30px;">
+                    <h3 class="color-purple">
+                        Название: {{ conference.title }}
+                    </h3>
+                    <h3 class="color-purple">
+                        Участников: {{ conference.members|length }}
+                    </h3>
+                    <h3 class="color-purple">
+                        Сообщений: {{ conference.msg_count }}
+                    </h3>
+                    <a class="color-green" href="/edit/{{ conference.conference_id }}">
+                        Редактировать беседу
+                    </a>
+                </div>
+            </div>
+            <h3 class="color-green" style="margin-top: 20px;">Пользователи:</h3>
+            <div class="table" style="margin-top: 30px;">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Имя</th>
+                        <th scope="col">Сообщений</th>
+                        <th scope="col">Выгнать</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for user in conf_users %}
+                        <tr>
+                            <th scope="row">{{ loop.index }}</th>
+                            <td>{{ users[user.user_id]['name'] }} {{ users[user.user_id]['surname'] }}</td>
+                            <td>{{ user.msg_count }}</td>
+                            <td>
+                                {% if not user.is_leave %}
+                                    <a href="/kick/{{ conference.conference_id }}/{{ user.user_id }}">
+                                        <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg">
+                                            <g>
+                                                <title>Кикнуть</title>
+                                                <g stroke="null" id="svg_4">
+                                                    <rect stroke="#ff3a3a" rx="16"
+                                                          transform="matrix(0.07499777784921263,0.07499777784921263,-0.07499777784921263,0.07499777784921263,14.656214858103834,-3.7327655557962602) "
+                                                          id="svg_3" height="38" width="283" y="103.59441" x="-48.27623"
+                                                          stroke-width="1.5" fill="#ff3a3a"/>
+                                                    <rect stroke="#ff3a3a" rx="16"
+                                                          transform="matrix(-0.07499777784921262,0.07499777784921263,-0.07499777784921263,-0.07499777784921262,32.05569931912116,13.509692307849281) "
+                                                          id="svg_2" height="38" width="283" y="118.72935" x="-17.85871"
+                                                          stroke-width="1.5" fill="#ff3a3a"/>
+                                                </g>
+                                            </g>
+                                        </svg>
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

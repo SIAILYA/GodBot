@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block css_enable %}
+    <link rel="stylesheet" href="static/css/panel.css">
+{% endblock %}
+
+{% block content %}
+    <div class="container text-center" style="margin-top: 30px">
+        <h2 class="color-purple">Бот сломан....</h2>
+        <svg width="338" height="212" xmlns="http://www.w3.org/2000/svg">
+            <!-- Created with SVG Editor - http://github.com/mzalive/SVG Editor/ -->
+            <g>
+                <title>background</title>
+                <rect fill="#fff" id="canvas_background" height="214" width="340" y="-1" x="-1"/>
+                <g display="none" overflow="visible" y="0" x="0" height="100%" width="100%" id="canvasGrid">
+                    <rect fill="url(#gridpattern)" stroke-width="0" y="0" x="0" height="100%" width="100%"/>
+                </g>
+            </g>
+            <g>
+                <title>Layer 1</title>
+                <rect stroke="#5d26c1" rx="40" id="svg_5" height="200.76677" width="296.81705" y="3.51717" x="4.77978"
+                      stroke-width="1.5" fill="#5d26c1"/>
+                <rect stroke="#5d26c1" id="svg_6" height="43.33096" width="83.051" y="160.68699" x="255.29712"
+                      stroke-width="1.5" fill="#5d26c1"/>
+                <ellipse stroke="#ffffff" ry="55.63234" rx="57.11615" id="svg_7" cy="155.63091" cx="360.15763"
+                         fill-opacity="null" stroke-width="1.5" fill="#ffffff"/>
+                <rect stroke="#ffffff"
+                      transform="matrix(3.1150273210822204,3.281342367973928,-3.1150273210822204,3.281342367973928,230.20637344117827,-240.94679929710205) "
+                      rx="2" id="svg_11" height="44.51615" width="5.32258" y="43.0963" x="37.63816" stroke-width="1.5"
+                      fill="#ffffff"/>
+                <rect stroke="#ffffff"
+                      transform="matrix(3.1150273210822204,-3.281342367973928,3.1150273210822204,3.281342367973928,-212.62493361310507,229.6920318592799) "
+                      rx="2" id="svg_9" height="44.51615" width="5.32258" y="17.21574" x="74.58743" stroke-width="1.5"
+                      fill="#ffffff"/>
+            </g>
+        </svg>
+        <div class="col-md-8 offset-2 error color-purple text-left" style="margin-top: 60px;">
+            Код ошибки:
+            <br>
+            <div class="codeblock text-left"
+                 style="background: #cccccc; border: #636363 solid 2px; border-radius: 5px; min-height: 100px">
+                {% for line in msglines %}
+                    >>> <code>{{ line }}</code>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

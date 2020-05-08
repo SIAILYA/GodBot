@@ -11,18 +11,11 @@ class PanelUser(SqlAlchemyBase, UserMixin, SerializerMixin):
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     login = sqlalchemy.Column(sqlalchemy.String(30), nullable=True)
-    email = sqlalchemy.Column(sqlalchemy.String(30))
-    access_rights = sqlalchemy.Column(sqlalchemy.String(50), nullable=True)
-    password_hash = sqlalchemy.Column(sqlalchemy.String(120), nullable=True)
+    password = sqlalchemy.Column(sqlalchemy.String(20), nullable=True)
+    user_id = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
 
     def __repr__(self):
-        return f"PanelUser #{self.id} {self.login} {self.access_rights}"
-
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return f"PanelUser #{self.id} {self.login}"
 
 
 if __name__ == '__main__':

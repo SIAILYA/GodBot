@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 from os import remove
 
-# import matplotlib
-# import matplotlib.pyplot as plt
+import matplotlib
+import matplotlib.pyplot as plt
 import pendulum
 import sqlalchemy
 import vk_api
@@ -17,6 +17,7 @@ except ModuleNotFoundError:
     from keyboards import kick_keyboard
 from vk_api.bot_longpoll import VkBotEventType
 from time import asctime
+from faker import Faker
 
 from panel.data import db_session
 from panel.data.models.all_conferences import Conference
@@ -24,6 +25,7 @@ from panel.data.models.all_users import User
 from panel.data.models.conference_user import ConferenceUser
 from panel.data.models.conferences_queue import ConferencesQueue
 from panel.data.models.staistics import Statistics
+from panel.data.models.panel_user import PanelUser
 
 
 def new_user(member):
@@ -89,8 +91,18 @@ class GodBotVk:
         conference = self.session.query(Conference).filter(Conference.conference_id == peer_id).first()
         msg_sum = 0
 
-        for st in self.session.query(Statistics).filter(Statistics.conference_id == peer_id).all():
-            msg_sum += st.sum()
+        for member in conference.members:
+            member_sum = 0
+            cu = self.session.query(ConferenceUser).filter(ConferenceUser.conference_id == peer_id,
+                                                           ConferenceUser.user_id == member.user_id).first()
+
+            for st in self.session.query(Statistics).filter(Statistics.conference_id == peer_id,
+                                                            Statistics.member_id == member.user_id).all():
+                current_sum = st.sum()
+                msg_sum += current_sum
+                member_sum += current_sum
+
+            cu.msg_count = member_sum
         conference.msg_count = msg_sum
         self.session.commit()
 
@@ -190,7 +202,7 @@ class GodBotVk:
         try:
             new_conference.photo = conference_info['chat_settings']['photo']['photo_200']
         except KeyError:
-            new_conference.photo = '/images/camera_50.png?ava=1'
+            new_conference.photo = 'https://vk.com/images/camera_200.png?ava=1'
         try:
             new_conference.pinned_message_id = conference_info['chat_settings']['pinned_message'][
                 'conversation_message_id']
@@ -348,9 +360,9 @@ class GodBotVk:
                                                            Statistics.date == datetime.now().date()).first()
 
         statistics.inc(datetime.now().hour)
-
-        if text[0] in '!/;' or '[club194017842|@godisbot]' in text or '[club194017842|GodBot]' in text:
-            self.command_handler(text, event)
+        if text:
+            if text[0] in '!/;' or '[club194017842|@godisbot]' in text or '[club194017842|GodBot]' in text:
+                self.command_handler(text, event)
 
     def user_conf_msg_count_total(self, member_id, peer_id):
         statistics = self.session.query(Statistics).filter(Statistics.member_id == member_id,
@@ -449,11 +461,16 @@ class GodBotVk:
                 elif len(message_object['fwd_messages']):
                     kicked_id = message_object['fwd_messages'][0]['from_id']
             if kicked_id:
-                try:
-                    self.VkApi.kick_user(peer_id - 2000000000, kicked_id)
-                    self.user_kick(peer_id, kicked_id)
-                except vk_api.exceptions.ApiError:
-                    self.VkApi.message_send(peer_id, 'Невозможно выгнать этого пользователя 😦')
+                curr_user = self.session.query(ConferenceUser).filter(ConferenceUser.user_id == from_id,
+                                                                      ConferenceUser.conference_id == peer_id).first()
+                kicked_user = self.session.query(ConferenceUser).filter(ConferenceUser.user_id == kicked_id,
+                                                                        ConferenceUser.conference_id == peer_id).first()
+                if not kicked_user.kick_immunity and curr_user.kick:
+                    try:
+                        self.VkApi.kick_user(peer_id - 2000000000, kicked_id)
+                        self.user_kick(peer_id, kicked_id)
+                    except vk_api.exceptions.ApiError:
+                        self.VkApi.message_send(peer_id, 'Невозможно выгнать этого пользователя 😦')
             return None
         if command in ['варн', 'предупреждение', 'warn']:
             warn_id = from_id  # Кто кикает
@@ -522,15 +539,33 @@ class GodBotVk:
             return None
         if command in ['panel', 'панель', 'веб']:
             self.VkApi.message_send(peer_id, f'Веб панель доступа по адресу {open("ngrok_address.txt", "r").read()}')
+        if command in ['вебрег', 'рег', 'панельрег']:
+            fake = Faker()
+            if self.session.query(User).filter(User.user_id == from_id).first().sex == 2:
+                nickname = fake.name_male().replace(' ', '')
+            else:
+                nickname = fake.name_female().replace(' ', '')
+            password = fake.password(length=8,
+                                     special_chars=False,
+                                     upper_case=False)
+            if not self.session.query(PanelUser).filter(PanelUser.user_id == from_id).first():
+                panel_user = PanelUser()
+                panel_user.login = nickname
+                panel_user.password = password
+                panel_user.user_id = from_id
+                self.session.add(panel_user)
+                self.VkApi.message_send(peer_id, f'Логин: {nickname}\n'
+                                                 f'Пароль: {password}\n'
+                                                 f'Никому не передавайте эти данные!')
+            else:
+                self.VkApi.message_send(peer_id, 'Вы уже зарегистрированы в панели!\n'
+                                                 'Напишите !ререг чтобы увидеть логин и обновить пароль')
 
 
 def main():
     GB = GodBotVk()
     GB.start_pooling()
 
-# if __name__ == '__main__':
-#     GB = GodBotVk()
-#     GB.start_pooling()
-#     # Обновление статистики:
-#     # confs = [conf.conference_id for conf in GB.session.query(Conference).all()]
-#     # [GB.update_conference_messages(i) for i in confs]
+
+if __name__ == '__main__':
+    main()

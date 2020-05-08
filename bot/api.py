@@ -70,6 +70,10 @@ class VkApi:
                                            memver_id=member_id,
                                            user_id=member_id)
 
+    def set_title(self, chat_id, title):
+        self.VkApi.messages.editChat(chat_id=chat_id,
+                                     title=title)
+
 
 def find_member_info(member_id, items):
     for i in items:

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block css_enable %}
+    <link rel="stylesheet" href="static/css/panel.css">
+{% endblock %}
+
+{% block content %}
+    <div class="container" style="margin-top: 30px">
+        <div class="text-center">
+            <h2 class="color-purple">Настройки беседы</h2>
+        </div>
+        <div class="col-md-6 offset-3">
+            <form action="" method="post">
+                {{ form.csrf_token }}
+
+                <div class="form-group">
+                    <label for="title">Название</label>
+                    {% if user.title_change or user.is_admin %}
+                        {{ form.title(class="form-control", placeholder=conference.title) }}
+                    {% else %}
+                        <input type="text" class="form-control" placeholder="{{ conference.title }}" disabled>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="hello">Приветствие</label>
+                    {% if user.title_change or user.is_admin %}
+                        {{ form.hello_msg(class="form-control", placeholder=conference.hello_msg) }}
+                    {% else %}
+                        <textarea class="form-control" name="hello" id="hello" cols="30" rows="10" disabled
+                                  placeholder="{{ conference.hello_msg }}"></textarea>
+                    {% endif %}
+                </div>
+
+                <div class="row">
+                    <div class="form-check">
+                        {{ form.archived(class="form-check-label", placeholder=conference.archived) }}
+                        <label for="archived" class="form-check-label">Отображать в ТОПе</label>
+                    </div>
+
+                    <div class="form-check">
+                        {{ form.auto_kick(class="form-check-label") }}
+                        <label for="auto_kick" class="form-check-label">Авто-кик</label>
+                    </div>
+                </div>
+
+                {{ form.submit(class="btn btn-primary", style="margin-top: 20px") }}
+            </form>
+        </div>
+    </div>
+{% endblock %}
