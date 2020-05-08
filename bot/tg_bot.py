@@ -1,6 +1,7 @@
 from telegram.ext import Updater, MessageHandler, Filters
 from telegram.ext import CallbackContext, CommandHandler, ConversationHandler
 from telegram import ReplyKeyboardMarkup
+from time import asctime
 
 
 def switch_chat(update, context):
@@ -40,7 +41,8 @@ def task(context):
         logs.write(''.join(answers))
 
 
-def send_message(update, context):
+def start(update, context):
+    update.message.reply_text('Привет!')
     chat_id = update.message.chat_id
     try:
         due = 1
@@ -54,6 +56,19 @@ def send_message(update, context):
         pass
 
 
+def send_message(update, context):
+    friend = context.user_data['friend']
+    print(friend, 'end')
+    if friend:
+        text = update.message.text
+        time = asctime().split()
+        with open('bot/logs/from_tg_to_vk.txt', 'a') as logs:
+            logs.write(friend + ' ' + text + ' | ' + time[1] + ' ' + time[2] + ' ' + time[-2] + '\n')
+        print(text)
+    else:
+        update.message.reply_text('Выберите друга!')
+
+
 def main():
     REQUEST_KWARGS = {
         'proxy_url': 'socks5h://geek:socks@t.geekclass.ru:7777'
@@ -62,6 +77,7 @@ def main():
                       request_kwargs=REQUEST_KWARGS)
     dp = updater.dispatcher
     text_handler = MessageHandler(Filters.text, send_message)
+    start_handler = CommandHandler('start', start)
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('switch', switch_chat)],
         states={
@@ -70,6 +86,7 @@ def main():
         fallbacks=[CommandHandler('stop', stop)]
     )
     dp.add_handler(conv_handler)
+    dp.add_handler(start_handler)
     dp.add_handler(text_handler)
     print('Telegram bot is started')
     updater.start_polling()
