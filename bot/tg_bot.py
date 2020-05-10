@@ -83,9 +83,9 @@ def main():
         },
         fallbacks=[CommandHandler('stop', stop)]
     )
-    dp.add_handler(conv_handler)
     dp.add_handler(start_handler)
     dp.add_handler(text_handler)
+    dp.add_handler(conv_handler)
     print('Telegram bot is started')
     updater.start_polling()
     updater.idle()

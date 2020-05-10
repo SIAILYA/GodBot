@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 from os import remove
 
-import matplotlib
-import matplotlib.pyplot as plt
+# import matplotlib
+# import matplotlib.pyplot as plt
 import pendulum
 import sqlalchemy
 import vk_api
@@ -554,12 +554,23 @@ class GodBotVk:
                 panel_user.password = password
                 panel_user.user_id = from_id
                 self.session.add(panel_user)
-                self.VkApi.message_send(peer_id, f'Логин: {nickname}\n'
+                self.VkApi.message_send(from_id, f'Логин: {nickname}\n'
                                                  f'Пароль: {password}\n'
                                                  f'Никому не передавайте эти данные!')
+                self.VkApi.message_send(peer_id, 'Данные отправлены вам в личные сообщения!')
             else:
                 self.VkApi.message_send(peer_id, 'Вы уже зарегистрированы в панели!\n'
                                                  'Напишите !ререг чтобы увидеть логин и обновить пароль')
+            if command in ['ререг', 'перерег']:
+                panel_user = PanelUser()
+                panel_user.login = nickname
+                panel_user.password = password
+                panel_user.user_id = from_id
+                self.session.add(panel_user)
+                self.VkApi.message_send(from_id, f'Логин: {nickname}\n'
+                                                 f'Пароль: {password}\n'
+                                                 f'Никому не передавайте эти данные!')
+                self.VkApi.message_send(peer_id, 'Данные отправлены вам в личные сообщения!')
 
 
 def main():
