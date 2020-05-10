@@ -561,16 +561,26 @@ class GodBotVk:
             else:
                 self.VkApi.message_send(peer_id, 'Вы уже зарегистрированы в панели!\n'
                                                  'Напишите !ререг чтобы увидеть логин и обновить пароль')
-            if command in ['ререг', 'перерег']:
+        if command in ['ререг', 'перерег']:
+            fake = Faker()
+            if self.session.query(User).filter(User.user_id == from_id).first().sex == 2:
+                nickname = fake.name_male().replace(' ', '')
+            else:
+                nickname = fake.name_female().replace(' ', '')
+            password = fake.password(length=8,
+                                     special_chars=False,
+                                     upper_case=False)
+            print(')))')
+            if not self.session.query(PanelUser).filter(PanelUser.user_id == from_id).first():
                 panel_user = PanelUser()
                 panel_user.login = nickname
                 panel_user.password = password
                 panel_user.user_id = from_id
                 self.session.add(panel_user)
-                self.VkApi.message_send(from_id, f'Логин: {nickname}\n'
+                self.VkApi.message_send(peer_id, f'Логин: {nickname}\n'
                                                  f'Пароль: {password}\n'
                                                  f'Никому не передавайте эти данные!')
-                self.VkApi.message_send(peer_id, 'Данные отправлены вам в личные сообщения!')
+            print('(((')
 
 
 def main():
