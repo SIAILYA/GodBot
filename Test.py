@@ -1,5 +1,6 @@
-from faker import Faker
+from random import choice
 
-fake = Faker()
-
-print(fake.name_male())
+key = ''
+for i in range(10):
+    key += choice('qwertyuiopasdfghjklzxcvbnm1234567890')
+print(key)

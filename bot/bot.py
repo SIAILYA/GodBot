@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import pendulum
 import sqlalchemy
 import vk_api
+from random import choice
 
 from panel.data.models.api_key import ApiKey
 
@@ -93,7 +94,7 @@ class GodBotVk:
                             peer_id = message_object['peer_id']
                             from_id = message_object['from_id']
                             fake = Faker()
-                            if command in ['вебрег', 'рег', 'панельрег']:
+                            if command in ['вебрег', 'рег', 'панельрег', 'ререг', 'перерег']:
                                 if self.session.query(User).filter(User.user_id == from_id).first().sex == 2:
                                     nickname = fake.name_male().replace(' ', '')
                                 else:
@@ -101,55 +102,28 @@ class GodBotVk:
                                 password = fake.password(length=8,
                                                          special_chars=False,
                                                          upper_case=False)
-                                if not self.session.query(PanelUser).filter(PanelUser.user_id == from_id).first():
-                                    panel_user = PanelUser()
-                                    panel_user.login = nickname
-                                    panel_user.password = password
-                                    panel_user.user_id = from_id
-                                    self.session.add(panel_user)
-                                    self.VkApi.message_send(from_id, f'Логин: {nickname}\n'
-                                                                     f'Пароль: {password}\n'
-                                                                     f'Никому не передавайте эти данные!')
-                                    self.VkApi.message_send(peer_id, 'Данные отправлены вам в личные сообщения!')
-                                else:
-                                    self.VkApi.message_send(peer_id, 'Вы уже зарегистрированы в панели!\n'
-                                                                     'Напишите !ререг чтобы увидеть логин и обновить '
-                                                                     'пароль')
-                            if command in ['ререг', 'перерег']:
-                                if self.session.query(User).filter(User.user_id == from_id).first().sex == 2:
-                                    nickname = fake.name_male().replace(' ', '')
-                                else:
-                                    nickname = fake.name_female().replace(' ', '')
-                                password = fake.password(length=8,
-                                                         special_chars=False,
-                                                         upper_case=False)
+                                panel_user = PanelUser()
+                                panel_user.login = nickname
+                                panel_user.password = password
+                                panel_user.user_id = from_id
+                                self.session.add(panel_user)
+                                self.VkApi.message_send(from_id, f'Логин: {nickname}\n'
+                                                                 f'Пароль: {password}\n'
+                                                                 f'Никому не передавайте эти данные!')
+                                self.VkApi.message_send(peer_id, 'Данные отправлены вам в личные сообщения!')
 
-                                panel_user = self.session.query(PanelUser).filter(PanelUser.user_id == from_id).first()
-                                if panel_user:
-                                    panel_user.login = nickname
-                                    panel_user.password = password
-                                    panel_user.user_id = from_id
-                                    self.VkApi.message_send(peer_id, f'Логин: {nickname}\n'
-                                                                     f'Пароль: {password}\n'
-                                                                     f'Никому не передавайте эти данные!')
-                                else:
-                                    self.VkApi.message_send(peer_id, f'Вы не зарегистрированы в панели!\n'
-                                                                     f'Используйте команду !рег')
                             if command in ['apikey', 'api', 'ключ']:
-                                current_key = self.session.query(ApiKey).filter(ApiKey.user_id == from_id).first()
-                                if not current_key:
-                                    key = 'randomgen'
-                                    # TODO: Сделать рандомную генерацию
-                                    new_key = ApiKey()
-                                    new_key.user_id = from_id
-                                    new_key.key = key
-                                    self.VkApi.message_send(from_id, 'Ваш ключ для АПИ GobBot готов!\n'
-                                                                     'Ни в коем случае не передавайте никому этот ключ!')
-                                    self.VkApi.message_send(from_id, key)
-                                    self.session.add(new_key)
-                                else:
-                                    pass
-                                    # TODO: Сделать перегенерацию ключа
+                                key = ''
+                                for i in range(10):
+                                    key += choice('qwertyuiopasdfghjklzxcvbnm1234567890')
+                                new_key = ApiKey()
+                                new_key.user_id = from_id
+                                new_key.key = key
+                                self.VkApi.message_send(from_id, 'Ваш ключ для АПИ GobBot готов!\n'
+                                                                 'Ни в коем случае не передавайте никому этот ключ!')
+                                self.VkApi.message_send(from_id, key)
+                                self.session.add(new_key)
+
                             self.session.commit()
 
     def update_conference_messages(self, peer_id):
