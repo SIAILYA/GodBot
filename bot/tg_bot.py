@@ -73,8 +73,8 @@ def main():
     updater = Updater("1156438301:AAFDrWFKvxh3zQFoHWh6trKSii8CVoODdbw", use_context=True,
                       request_kwargs=REQUEST_KWARGS)
     dp = updater.dispatcher
-    text_handler = MessageHandler(Filters.text, send_message)
     start_handler = CommandHandler('start', start)
+    text_handler = MessageHandler(Filters.text, send_message)
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('switch', switch_chat)],
         states={
@@ -83,8 +83,8 @@ def main():
         fallbacks=[CommandHandler('stop', stop)]
     )
     dp.add_handler(conv_handler)
-    dp.add_handler(start_handler)
     dp.add_handler(text_handler)
+    dp.add_handler(start_handler)
     print('Telegram bot is started')
     updater.start_polling()
     updater.idle()
