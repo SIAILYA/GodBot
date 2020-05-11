@@ -5,7 +5,7 @@ from panel.data.db_session import SqlAlchemyBase
 
 
 class ApiKey(SqlAlchemyBase, UserMixin, SerializerMixin):
-    __tablename__ = 'panel_users'
+    __tablename__ = 'api_keys'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     key = sqlalchemy.Column(sqlalchemy.String(120), nullable=True)

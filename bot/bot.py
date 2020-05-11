@@ -136,12 +136,20 @@ class GodBotVk:
                                     self.VkApi.message_send(peer_id, f'Вы не зарегистрированы в панели!\n'
                                                                      f'Используйте команду !рег')
                             if command in ['apikey', 'api', 'ключ']:
-                                current_key = self.session.query(ApiKey).filter(ApiKey.user_id == from_id)
+                                current_key = self.session.query(ApiKey).filter(ApiKey.user_id == from_id).first()
                                 if not current_key:
                                     key = 'randomgen'
+                                    # TODO: Сделать рандомную генерацию
                                     new_key = ApiKey()
                                     new_key.user_id = from_id
                                     new_key.key = key
+                                    self.VkApi.message_send(from_id, 'Ваш ключ для АПИ GobBot готов!\n'
+                                                                     'Ни в коем случае не передавайте никому этот ключ!')
+                                    self.VkApi.message_send(from_id, key)
+                                    self.session.add(new_key)
+                                else:
+                                    pass
+                                    # TODO: Сделать перегенерацию ключа
                             self.session.commit()
 
     def update_conference_messages(self, peer_id):
