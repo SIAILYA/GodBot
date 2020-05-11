@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import pendulum
 import sqlalchemy
 import vk_api
+from random import choice
 
 from panel.data.models.api_key import ApiKey
 
@@ -138,8 +139,9 @@ class GodBotVk:
                             if command in ['apikey', 'api', 'ключ']:
                                 current_key = self.session.query(ApiKey).filter(ApiKey.user_id == from_id).first()
                                 if not current_key:
-                                    key = 'randomgen'
-                                    # TODO: Сделать рандомную генерацию
+                                    key = ''
+                                    for i in range(10):
+                                        key += choice('qwertyuiopasdfghjklzxcvbnm1234567890')
                                     new_key = ApiKey()
                                     new_key.user_id = from_id
                                     new_key.key = key
