@@ -16,13 +16,20 @@ def check_api_key(key):
     return None
 
 
+def not_found_abort(inst):
+    if inst:
+        return True
+    return False
+
+
 class UsersResource(Resource):
     def get(self, key, user_id):
         if check_api_key(key):
             session = db_session.create_session()
             user = session.query(User).filter(User.user_id == user_id).first()
-            print(user)
-            return jsonify({'user': user.to_dict(only=('name', 'surname', 'sex', 'msg_count'))})
+            if user:
+                return jsonify({'user': user.to_dict(only=('name', 'surname', 'sex', 'msg_count'))})
+            abort(404, message=f"User with id {user_id} not found")
         return jsonify({'error': 'invalid api key'})
 
 
@@ -31,7 +38,8 @@ class UsersListResource(Resource):
         if check_api_key(key) and conference_id in check_api_key(key):
             session = db_session.create_session()
             users = session.query(ConferenceUser).filter(ConferenceUser.conference_id == conference_id).all()
-            print(users)
-            return jsonify(
-                {'users': [user.to_dict(only=('user_id', 'conference_id', 'msg_count', 'is_admin', 'is_leave'))
-                           for user in users]})
+            if users:
+                return jsonify(
+                    {'users': [user.to_dict(only=('user_id', 'conference_id', 'msg_count', 'is_admin', 'is_leave'))
+                               for user in users]})
+        return jsonify({'error': 'invalid api key'})

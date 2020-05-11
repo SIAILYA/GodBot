@@ -5,7 +5,7 @@ from bot.tg_bot import main as mainTG
 from bot.checker import main as mainChecker
 from multiprocessing import Process
 
-__VERSION__ = '0.2'
+__VERSION__ = '1.0'
 
 if __name__ == '__main__':
     panel_process = Process(target=app.main)

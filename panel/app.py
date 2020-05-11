@@ -14,6 +14,7 @@ from panel.data.forms.login_form import LoginForm
 from panel.data.forms.manage import ManageForm
 from panel.data.models.all_conferences import Conference
 from panel.data.models.all_users import User
+from panel.data.models.api_key import ApiKey
 from panel.data.models.conference_user import ConferenceUser
 from panel.data.models.panel_user import PanelUser
 
