@@ -7,7 +7,7 @@ def main():
     length = 0
     while True:
         sleep(1)
-        with open('bot/logs/from_tg_to_vk.txt', 'r') as logs:
+        with open(r'C:\Projects\GodBot\bot\logs\from_tg_to_vk.txt', 'r') as logs:
             answers = logs.readlines()
             if len(answers) != length:
                 answer = answers[0].split()
@@ -16,5 +16,5 @@ def main():
             if answers:
                 answers.pop(0)
                 length -= 1
-        with open('bot/logs/from_tg_to_vk.txt', 'w') as logs:
+        with open(r'C:\Projects\GodBot\bot\logs\from_tg_to_vk.txt', 'w') as logs:
             logs.write(''.join(answers))

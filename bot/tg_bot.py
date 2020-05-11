@@ -10,7 +10,7 @@ def switch_chat(update, context):
 
 def chat_switched(update, context):
     message = update.message.text
-    with open('logs/names.txt', 'r') as names:
+    with open(r'C:\Projects\GodBot\bot\logs\names.txt', 'r') as names:
         names = names.read()
         if message in names:
             switch_id_to = names[names.find(message) - 10:names.find(message) - 1]
@@ -28,7 +28,7 @@ def stop(update, context):
 def task(context):
     job = context.job
     global length
-    with open('logs/from_vk_to_tg.txt', 'r') as logs:
+    with open(r'C:\Projects\GodBot\bot\logs\from_vk_to_tg.txt', 'r') as logs:
         answers = logs.readlines()
         if len(answers) != length:
             context.bot.send_message(job.context, text=' '.join(answers[0].split()[:-4]))
@@ -36,7 +36,7 @@ def task(context):
         if answers:
             answers.pop(0)
             length -= 1
-    with open('logs/from_vk_to_tg.txt', 'w') as logs:
+    with open(r'C:\Projects\GodBot\bot\logs\from_vk_to_tg.txt', 'w') as logs:
         logs.write(''.join(answers))
 
 
@@ -60,7 +60,7 @@ def send_message(update, context):
     if friend:
         text = update.message.text
         time = asctime().split()
-        with open('logs/from_tg_to_vk.txt', 'a') as logs:
+        with open(r'C:\Projects\GodBot\bot\logs\from_tg_to_vk.txt', 'a') as logs:
             logs.write(friend + ' ' + text + ' | ' + time[1] + ' ' + time[2] + ' ' + time[-2] + '\n')
     else:
         update.message.reply_text('Выберите друга!')
@@ -73,8 +73,8 @@ def main():
     updater = Updater("1156438301:AAFDrWFKvxh3zQFoHWh6trKSii8CVoODdbw", use_context=True,
                       request_kwargs=REQUEST_KWARGS)
     dp = updater.dispatcher
-    start_handler = CommandHandler('start', start)
     text_handler = MessageHandler(Filters.text, send_message)
+    start_handler = CommandHandler('start', start)
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('switch', switch_chat)],
         states={
@@ -83,8 +83,8 @@ def main():
         fallbacks=[CommandHandler('stop', stop)]
     )
     dp.add_handler(conv_handler)
-    dp.add_handler(text_handler)
     dp.add_handler(start_handler)
+    dp.add_handler(text_handler)
     print('Telegram bot is started')
     updater.start_polling()
     updater.idle()
