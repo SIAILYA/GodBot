@@ -4,8 +4,10 @@ import vk_api
 from flask import Flask, render_template, redirect
 from flask_login import login_user, LoginManager, current_user, login_required, logout_user
 from flask_ngrok import run_with_ngrok
+from flask_restful import Api
 
 from bot.api import VkApi
+from panel.api import UsersResource, UsersListResource
 from panel.data import db_session
 from panel.data.db_session import create_session
 from panel.data.forms.login_form import LoginForm
@@ -16,12 +18,16 @@ from panel.data.models.conference_user import ConferenceUser
 from panel.data.models.panel_user import PanelUser
 
 app = Flask(__name__)
+api = Api(app)
 app.config['SECRET_KEY'] = 'our secret key'
 login_manager = LoginManager()
 login_manager.init_app(app)
 
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
+
+api.add_resource(UsersResource, '/api/user/<key>/<int:user_id>')
+api.add_resource(UsersListResource, '/api/conf_users/<key>/<int:conference_id>')
 
 
 def main():

@@ -6,17 +6,10 @@ from panel.data.models.all_users import User
 from panel.data.models.api_key import ApiKey
 from panel.data.models.conference_user import ConferenceUser
 
-parser = reqparse.RequestParser()
-parser.add_argument('job', required=True)
-parser.add_argument('work_size', required=True, type=int)
-parser.add_argument('collaborators', required=True)
-parser.add_argument('is_finished', required=True, type=bool)
-parser.add_argument('team_leader', required=True, type=int)
-
 
 def check_api_key(key):
     session = db_session.create_session()
-    api_key = session.query(ApiKey).filter(ApiKey.key == key)
+    api_key = session.query(ApiKey).filter(ApiKey.key == key).first()
     if api_key:
         return [cu.conference_id for cu in
                 session.query(ConferenceUser).filter(ConferenceUser.user_id == api_key.user_id).all()]
@@ -24,20 +17,21 @@ def check_api_key(key):
 
 
 class UsersResource(Resource):
-    def get(self, key, job_id):
-        session = db_session.create_session()
-        user = session.query(User).get(job_id)
-        return jsonify({'job': user.to_dict()})
-        2
+    def get(self, key, user_id):
+        if check_api_key(key):
+            session = db_session.create_session()
+            user = session.query(User).filter(User.user_id == user_id).first()
+            print(user)
+            return jsonify({'user': user.to_dict(only=('name', 'surname', 'sex', 'msg_count'))})
+        return jsonify({'error': 'invalid api key'})
 
 
 class UsersListResource(Resource):
-    def get(self, key):
-        session = db_session.create_session()
-        users = session.query(User).all()
-        return jsonify({'news': [user.to_dict()
-                                 for user in users]})
-
-
-if __name__ == '__main__':
-    pass
+    def get(self, key, conference_id):
+        if check_api_key(key) and conference_id in check_api_key(key):
+            session = db_session.create_session()
+            users = session.query(ConferenceUser).filter(ConferenceUser.conference_id == conference_id).all()
+            print(users)
+            return jsonify(
+                {'users': [user.to_dict(only=('user_id', 'conference_id', 'msg_count', 'is_admin', 'is_leave'))
+                           for user in users]})
