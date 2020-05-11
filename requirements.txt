@@ -5,3 +5,6 @@ flask
 flask_login
 sqlalchemy
 vk_api
+flask_wtf
+sqlalchemy_serializer
+python-telegram-bot

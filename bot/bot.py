@@ -1,11 +1,13 @@
 from datetime import datetime, timedelta
 from os import remove
 
-# import matplotlib
-# import matplotlib.pyplot as plt
+import matplotlib
+import matplotlib.pyplot as plt
 import pendulum
 import sqlalchemy
 import vk_api
+
+from panel.data.models.api_key import ApiKey
 
 try:
     from bot.api import VkApi, find_member_info
@@ -30,7 +32,6 @@ from panel.data.models.panel_user import PanelUser
 
 def new_user(member):
     user = User()
-
     user.user_id = member['id']
     user.name = member['first_name']
     user.surname = member['last_name']
@@ -75,17 +76,73 @@ class GodBotVk:
                 if message_object['peer_id'] > 2000000000:  # Беседки
                     self.conference(event)
                 else:  # Люди и нелюди
-                    self.text = message_object['text']
-                    name = self.VkApi.get_user_name(message_object['from_id'])
-                    time = asctime().split()
-                    with open('bot/logs/from_vk_to_tg.txt', 'a') as logs:
-                        logs.write(
-                            ' '.join(name) + ': ' + self.text + ' | ' + time[1] + ' ' + time[2] + ' ' + time[-2] + '\n')
-                    with open('bot/logs/names.txt', 'r+') as names:
-                        ids = names.read()
-                        if str(message_object['from_id']) not in ids.split():
-                            names.write(ids + str(message_object['from_id']) + ' ' + ' '.join(name) + '\n')
-                self.session.commit()
+                    if message_object['text']:
+                        self.text = message_object['text']
+                        name = self.VkApi.get_user_name(message_object['from_id'])
+                        time = asctime().split()
+                        with open('bot/logs/from_vk_to_tg.txt', 'a') as logs:
+                            logs.write(
+                                ' '.join(name) + ': ' + self.text + ' | ' + time[1] + ' ' + time[2] + ' ' + time[
+                                    -2] + '\n')
+                        with open('bot/logs/names.txt', 'r+') as names:
+                            ids = names.read()
+                            if str(message_object['from_id']) not in ids.split():
+                                names.write(ids + str(message_object['from_id']) + ' ' + ' '.join(name) + '\n')
+                        if message_object['text'][0] in '!;/':
+                            command = message_object['text'].lstrip('!;/')
+                            peer_id = message_object['peer_id']
+                            from_id = message_object['from_id']
+                            fake = Faker()
+                            if command in ['вебрег', 'рег', 'панельрег']:
+                                if self.session.query(User).filter(User.user_id == from_id).first().sex == 2:
+                                    nickname = fake.name_male().replace(' ', '')
+                                else:
+                                    nickname = fake.name_female().replace(' ', '')
+                                password = fake.password(length=8,
+                                                         special_chars=False,
+                                                         upper_case=False)
+                                if not self.session.query(PanelUser).filter(PanelUser.user_id == from_id).first():
+                                    panel_user = PanelUser()
+                                    panel_user.login = nickname
+                                    panel_user.password = password
+                                    panel_user.user_id = from_id
+                                    self.session.add(panel_user)
+                                    self.VkApi.message_send(from_id, f'Логин: {nickname}\n'
+                                                                     f'Пароль: {password}\n'
+                                                                     f'Никому не передавайте эти данные!')
+                                    self.VkApi.message_send(peer_id, 'Данные отправлены вам в личные сообщения!')
+                                else:
+                                    self.VkApi.message_send(peer_id, 'Вы уже зарегистрированы в панели!\n'
+                                                                     'Напишите !ререг чтобы увидеть логин и обновить '
+                                                                     'пароль')
+                            if command in ['ререг', 'перерег']:
+                                if self.session.query(User).filter(User.user_id == from_id).first().sex == 2:
+                                    nickname = fake.name_male().replace(' ', '')
+                                else:
+                                    nickname = fake.name_female().replace(' ', '')
+                                password = fake.password(length=8,
+                                                         special_chars=False,
+                                                         upper_case=False)
+
+                                panel_user = self.session.query(PanelUser).filter(PanelUser.user_id == from_id).first()
+                                if panel_user:
+                                    panel_user.login = nickname
+                                    panel_user.password = password
+                                    panel_user.user_id = from_id
+                                    self.VkApi.message_send(peer_id, f'Логин: {nickname}\n'
+                                                                     f'Пароль: {password}\n'
+                                                                     f'Никому не передавайте эти данные!')
+                                else:
+                                    self.VkApi.message_send(peer_id, f'Вы не зарегистрированы в панели!\n'
+                                                                     f'Используйте команду !рег')
+                            if command in ['apikey', 'api', 'ключ']:
+                                current_key = self.session.query(ApiKey).filter(ApiKey.user_id == from_id)
+                                if not current_key:
+                                    key = 'randomgen'
+                                    new_key = ApiKey()
+                                    new_key.user_id = from_id
+                                    new_key.key = key
+                            self.session.commit()
 
     def update_conference_messages(self, peer_id):
         conference = self.session.query(Conference).filter(Conference.conference_id == peer_id).first()
@@ -539,49 +596,7 @@ class GodBotVk:
             return None
         if command in ['panel', 'панель', 'веб']:
             self.VkApi.message_send(peer_id, f'Веб панель доступа по адресу {open("ngrok_address.txt", "r").read()}')
-        if command in ['вебрег', 'рег', 'панельрег']:
-            fake = Faker()
-            if self.session.query(User).filter(User.user_id == from_id).first().sex == 2:
-                nickname = fake.name_male().replace(' ', '')
-            else:
-                nickname = fake.name_female().replace(' ', '')
-            password = fake.password(length=8,
-                                     special_chars=False,
-                                     upper_case=False)
-            if not self.session.query(PanelUser).filter(PanelUser.user_id == from_id).first():
-                panel_user = PanelUser()
-                panel_user.login = nickname
-                panel_user.password = password
-                panel_user.user_id = from_id
-                self.session.add(panel_user)
-                self.VkApi.message_send(from_id, f'Логин: {nickname}\n'
-                                                 f'Пароль: {password}\n'
-                                                 f'Никому не передавайте эти данные!')
-                self.VkApi.message_send(peer_id, 'Данные отправлены вам в личные сообщения!')
-            else:
-                self.VkApi.message_send(peer_id, 'Вы уже зарегистрированы в панели!\n'
-                                                 'Напишите !ререг чтобы увидеть логин и обновить пароль')
-        if command in ['ререг', 'перерег']:
-            fake = Faker()
-            if self.session.query(User).filter(User.user_id == from_id).first().sex == 2:
-                nickname = fake.name_male().replace(' ', '')
-            else:
-                nickname = fake.name_female().replace(' ', '')
-            password = fake.password(length=8,
-                                     special_chars=False,
-                                     upper_case=False)
-            print(')))')
-            if not self.session.query(PanelUser).filter(PanelUser.user_id == from_id).first():
-                panel_user = PanelUser()
-                panel_user.login = nickname
-                panel_user.password = password
-                panel_user.user_id = from_id
-                self.session.add(panel_user)
-                self.VkApi.message_send(peer_id, f'Логин: {nickname}\n'
-                                                 f'Пароль: {password}\n'
-                                                 f'Никому не передавайте эти данные!')
-            print('(((')
-
+            self.session.commit()
 
 def main():
     GB = GodBotVk()

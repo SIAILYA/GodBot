@@ -15,7 +15,7 @@ if __name__ == '__main__':
     stat_updater = Process(target=updater)
 
     VK_process.start()
-    panel_process.start()
-    TG_process.start()
-    stat_updater.start()
-    VK_loader_process.start()
+    # panel_process.start()
+    # # TG_process.start()
+    # stat_updater.start()
+    # VK_loader_process.start()
