@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 from os import remove
 
-import matplotlib
-import matplotlib.pyplot as plt
+# import matplotlib
+# import matplotlib.pyplot as plt
 import pendulum
 import sqlalchemy
 import vk_api

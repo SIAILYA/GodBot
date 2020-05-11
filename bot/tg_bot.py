@@ -1,6 +1,5 @@
 from telegram.ext import Updater, MessageHandler, Filters
 from telegram.ext import CallbackContext, CommandHandler, ConversationHandler
-from telegram import ReplyKeyboardMarkup
 from time import asctime
 
 
@@ -11,7 +10,7 @@ def switch_chat(update, context):
 
 def chat_switched(update, context):
     message = update.message.text
-    with open('bot/logs/names.txt', 'r') as names:
+    with open('logs/names.txt', 'r') as names:
         names = names.read()
         if message in names:
             switch_id_to = names[names.find(message) - 10:names.find(message) - 1]
@@ -29,7 +28,7 @@ def stop(update, context):
 def task(context):
     job = context.job
     global length
-    with open('bot/logs/from_vk_to_tg.txt', 'r') as logs:
+    with open('logs/from_vk_to_tg.txt', 'r') as logs:
         answers = logs.readlines()
         if len(answers) != length:
             context.bot.send_message(job.context, text=' '.join(answers[0].split()[:-4]))
@@ -37,7 +36,7 @@ def task(context):
         if answers:
             answers.pop(0)
             length -= 1
-    with open('bot/logs/from_vk_to_tg.txt', 'w') as logs:
+    with open('logs/from_vk_to_tg.txt', 'w') as logs:
         logs.write(''.join(answers))
 
 
@@ -61,7 +60,7 @@ def send_message(update, context):
     if friend:
         text = update.message.text
         time = asctime().split()
-        with open('bot/logs/from_tg_to_vk.txt', 'a') as logs:
+        with open('logs/from_tg_to_vk.txt', 'a') as logs:
             logs.write(friend + ' ' + text + ' | ' + time[1] + ' ' + time[2] + ' ' + time[-2] + '\n')
     else:
         update.message.reply_text('Выберите друга!')
@@ -83,9 +82,9 @@ def main():
         },
         fallbacks=[CommandHandler('stop', stop)]
     )
+    dp.add_handler(conv_handler)
     dp.add_handler(start_handler)
     dp.add_handler(text_handler)
-    dp.add_handler(conv_handler)
     print('Telegram bot is started')
     updater.start_polling()
     updater.idle()
