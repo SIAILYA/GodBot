@@ -8,3 +8,4 @@ vk_api
 flask_wtf
 sqlalchemy_serializer
 python-telegram-bot
+flask-restful
